@@ -75,7 +75,7 @@ builds GraphQL; it calls `ProjectsApi` methods that return model types.
 - **Rate limits**: `client.ts` retries secondary limits, 403/429 and `RATE_LIMITED` using
   `retry-after` or `x-ratelimit-reset` when present, else exponential backoff with jitter, and
   reports each wait so the UI can warn. A mutation that returns GraphQL errors always fails.
-- **Testing hooks**: `activate()` returns `__setApiFactory` / `__setTokenProvider` /
+- **Testing hooks**: `activate()` returns `__api` / `__setApiFactory` / `__setTokenProvider` /
   `__treeChildren` / `__boards` / `__statusText` so integration tests and the screenshot harness
   can drive the extension. Never used in product code.
 
@@ -95,6 +95,9 @@ builds GraphQL; it calls `ProjectsApi` methods that return model types.
 - `npm run screenshot -- --scenario <name>` opens the extension in an Extension Development Host
   and captures it over the Chrome DevTools Protocol. Scenarios live in `scripts/scenarios.mjs` and
   use the `SANDBOX` project defined there.
+- `npm run demo -- --demo open|move|filter|detail|all` records the README GIFs into `docs/media`
+  (needs `ffmpeg` and Python with Pillow). `move` and `detail` change a Status and a Priority in
+  the sandbox; set them back before recording again.
 
 ## Conventions
 

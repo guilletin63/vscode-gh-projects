@@ -178,7 +178,8 @@
     "package": "vsce package --no-dependencies",
     "vscode:prepublish": "npm run build -- --production",
     "screenshot": "node scripts/screenshot.mjs",
-    "test:live": "GHP_LIVE_TOKEN=$(gh auth token) vitest run --config vitest.live.config.mts"
+    "test:live": "GHP_LIVE_TOKEN=$(gh auth token) vitest run --config vitest.live.config.mts",
+    "demo": "node scripts/record-demo.mjs"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",

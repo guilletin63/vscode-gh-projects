@@ -23,17 +23,62 @@ Work with **GitHub Projects (v2)** boards without leaving the editor: the same b
   extension is installed, **Open in GitHub Pull Requests**.
 - **Refresh** on demand, optional polling and a status bar counter of the items assigned to you
   that are "In progress".
+- Follows your VS Code theme (light, dark and high contrast).
 
-![Filters](docs/screenshots/filters.png)
+## Installation
 
-![Item details](docs/screenshots/detail.png)
+Download `vscode-gh-projects-<version>.vsix` from the latest
+[CI run](https://github.com/guilletin63/vscode-gh-projects/actions/workflows/ci.yml?query=branch%3Amain)
+(artifact **vsix**; GitHub asks you to sign in to download artifacts) or build it yourself (`npm ci && npm run package`), then:
 
-## Getting started
+```bash
+code --install-extension vscode-gh-projects-0.1.0.vsix
+```
 
-1. Open the **GitHub Projects** view in the Activity Bar and choose **Sign in to GitHub**.
-   The extension uses the GitHub account VS Code already knows.
-2. Expand an owner, then click a project (or one of its views) to open its board.
-3. Use **Add Owner…** in the view title to browse an organization that doesn't appear on its own.
+## How to use
+
+### 1. Sign in
+
+Open the **GitHub Projects** view in the Activity Bar and choose **Sign in to GitHub**. The
+extension uses the GitHub account VS Code already knows; nothing to configure.
+
+<img src="docs/screenshots/sign-in.png" alt="Sign in" width="420">
+
+### 2. Open a board
+
+Your user and organizations are listed with their open projects. Click a project to open its
+board, or expand it and pick one of its views. Use **Add Owner…** (＋ in the view title) for an
+organization that doesn't show up on its own.
+
+![Open a board](docs/media/open-board.gif)
+
+### 3. Move cards
+
+Drag a card to another column. It moves immediately and GitHub is updated in the background; if
+the update fails, the card goes back and you get a warning. Without a mouse: focus a card and use
+the **Move** menu or <kbd>Alt</kbd>+<kbd>←</kbd>/<kbd>→</kbd>. The status bar counter
+("1 in progress") follows your own items.
+
+![Move a card](docs/media/move-card.gif)
+
+### 4. Filter and search
+
+Type in the search box (`#123`, words from titles, repository, labels…) or pick values in the
+**Label**, **Assignee** and field menus. Values inside a menu are combined with OR, menus with
+AND. Filters are remembered per project.
+
+![Filters](docs/media/filters.gif)
+
+### 5. Item details
+
+Click a card to read its description and edit its project fields. **Open on GitHub** and
+**Copy link** are one click away.
+
+![Item details](docs/media/item-detail.gif)
+
+### Light theme
+
+![Board in the light theme](docs/screenshots/board-light.png)
 
 ## Permissions and privacy
 

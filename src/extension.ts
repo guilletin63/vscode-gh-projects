@@ -21,6 +21,7 @@ export interface ExtensionApi {
   __setTokenProvider(provider: TokenProvider): void;
   __setApiFactory(factory: () => ProjectsApi): void;
   __treeChildren(node?: TreeNode): Promise<TreeNode[]>;
+  __api(): ProjectsApi;
   __boards(): BoardPanel[];
   __statusText(): string;
   __refreshCounter(): Promise<void>;
@@ -209,6 +210,7 @@ export function activate(context: vscode.ExtensionContext): ExtensionApi {
       tree.refresh();
     },
     __treeChildren: (node) => tree.getChildren(node),
+    __api: () => api,
     __boards: () => BoardPanel.all(),
   };
 }

@@ -10,6 +10,21 @@ exports.activate = async function activate() {
   if (token && typeof api.__setTokenProvider === 'function') {
     api.__setTokenProvider(async () => token);
   }
+  // Demos: only list the project with this title, so other projects of the account stay private.
+  const only = process.env.GHP_HARNESS_PROJECT_FILTER;
+  if (only) {
+    const real = api.__api();
+    api.__setApiFactory(
+      () =>
+        new Proxy(real, {
+          get(target, key) {
+            if (key === 'listProjects') return async (...args) => (await target.listProjects(...args)).filter((p) => p.title === only);
+            const value = target[key];
+            return typeof value === 'function' ? value.bind(target) : value;
+          },
+        }),
+    );
+  }
   const steps = JSON.parse(process.env.GHP_HARNESS_STEPS || '[]');
   for (const step of steps) {
     if (step.wait) await new Promise((r) => setTimeout(r, step.wait));
