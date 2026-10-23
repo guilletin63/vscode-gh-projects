@@ -246,6 +246,8 @@ function view(): Node[] {
         total: board.items.length,
         openMenu: ui.openMenu,
         onOpenMenu: (key) => {
+          // A re-rendered open <details> fires 'toggle' again: ignore it or we'd render forever.
+          if (ui.openMenu === key) return;
           ui.openMenu = key;
           render();
         },
@@ -406,6 +408,8 @@ function columnView(column: Column, ctx: CardContext): HTMLElement {
     section.addEventListener('drop', (e) => {
       e.preventDefault();
       section.classList.remove('drop-target');
+      // The re-render replaces the dragged card, so its 'dragend' may never reach us.
+      app.classList.remove('is-dragging');
       const itemId = e.dataTransfer?.getData(DRAG_TYPE);
       if (itemId) moveItem(itemId, column.id);
     });
