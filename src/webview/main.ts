@@ -849,6 +849,7 @@ function columnView(column: Column, ctx: CardContext): HTMLElement {
     'ol',
     { class: 'cards' },
     column.items.length === 0 ? h('li', { class: 'column-empty' }, 'No items') : column.items.map((item) => cardView(item, column, ctx)),
+    addCard(column, ctx),
   );
   const isNone = column.id === NO_VALUE_COLUMN;
   const section = h(
@@ -861,7 +862,6 @@ function columnView(column: Column, ctx: CardContext): HTMLElement {
     header,
     desc,
     list,
-    addCard(column, ctx),
   );
   if (ctx.movable || ctx.orderable) {
     sortableList(list, {
@@ -894,7 +894,7 @@ function addCard(column: Column, ctx: CardContext): HTMLElement {
   if (!adding) {
     const b = h('button', { type: 'button', class: 'add-button' }, '+ Add item');
     b.addEventListener('click', () => startAdd(key));
-    return h('div', { class: 'column-add' }, b);
+    return h('li', { class: 'column-add' }, b);
   }
   const input = h('input', {
     type: 'text',
@@ -916,7 +916,7 @@ function addCard(column: Column, ctx: CardContext): HTMLElement {
   input.addEventListener('blur', () => {
     if (!input.value.trim()) cancelAdd();
   });
-  return h('div', { class: 'column-add' }, input, adding.pending ? h('span', { class: 'muted' }, 'Adding…') : null);
+  return h('li', { class: 'column-add' }, input, adding.pending ? h('span', { class: 'muted' }, 'Adding…') : null);
 }
 
 /** Move menus live inside scrolling columns, so they are placed with fixed coordinates. */

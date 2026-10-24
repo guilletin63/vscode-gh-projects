@@ -179,7 +179,8 @@ button:focus-visible,
 .board {
   flex: 1;
   display: flex;
-  align-items: flex-start;
+  /* Full-height columns: a card can be dropped anywhere in a column. */
+  align-items: stretch;
   gap: var(--gap);
   padding: var(--gap) 16px;
   overflow: auto;
@@ -1335,7 +1336,7 @@ input.search::placeholder {
 
 .lane-columns {
   display: flex;
-  align-items: flex-start;
+  align-items: stretch;
   gap: var(--gap);
 }
 
@@ -1379,7 +1380,15 @@ input.search::placeholder {
 
 /* Card lists fill their column so a card can be dropped anywhere in it. */
 .cards {
+  flex: 1 1 auto;
   min-height: 48px;
+}
+
+/* "+ Add item" lives in the list (so dropping on it works) and always shows last, even when
+   the drop position is drawn after it. */
+.cards .column-add {
+  order: 1;
+  padding: 0;
 }
 
 #app.is-dragging,
