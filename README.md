@@ -27,13 +27,17 @@ Work with **GitHub Projects (v2)** boards without leaving the editor: the same b
 
 ## Installation
 
-Download `vscode-gh-projects-<version>.vsix` from the latest
-[CI run](https://github.com/guilletin63/vscode-gh-projects/actions/workflows/ci.yml?query=branch%3Amain)
-(artifact **vsix**; GitHub asks you to sign in to download artifacts) or build it yourself (`npm ci && npm run package`), then:
+1. Download **[vscode-gh-projects-0.1.0.vsix](https://github.com/guilletin63/vscode-gh-projects/releases/latest/download/vscode-gh-projects-0.1.0.vsix)**
+   from the [latest release](https://github.com/guilletin63/vscode-gh-projects/releases/latest).
+2. Install it:
 
-```bash
-code --install-extension vscode-gh-projects-0.1.0.vsix
-```
+   ```bash
+   code --install-extension vscode-gh-projects-0.1.0.vsix
+   ```
+
+   Or in VS Code: **Extensions** view → **…** menu → **Install from VSIX…**.
+
+Requires VS Code 1.99 or later. To build it yourself: `npm ci && npm run package`.
 
 ## How to use
 
