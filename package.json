@@ -1,8 +1,8 @@
 {
   "name": "vscode-gh-projects",
-  "displayName": "GitHub Projects Boards",
+  "displayName": "GitHub Projects in VS Code",
   "description": "GitHub Projects (v2) boards inside VS Code: columns by Status, drag & drop, filters, item details and an in-progress counter.",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "publisher": "guilletin63",
   "license": "MIT",
   "icon": "media/icon.png",
@@ -48,7 +48,7 @@
         {
           "id": "ghProjects",
           "title": "GitHub Projects",
-          "icon": "media/projects.svg"
+          "icon": "media/projects-dark.png"
         }
       ]
     },
@@ -178,7 +178,7 @@
     "package": "vsce package --no-dependencies",
     "vscode:prepublish": "npm run build -- --production",
     "screenshot": "node scripts/screenshot.mjs",
-    "test:live": "GHP_LIVE_TOKEN=$(gh auth token) vitest run --config vitest.live.config.mts",
+    "test:live": "node scripts/test-live.mjs",
     "demo": "node scripts/record-demo.mjs"
   },
   "devDependencies": {

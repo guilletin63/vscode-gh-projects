@@ -74,7 +74,10 @@ export class BoardPanel implements vscode.Disposable {
     private persisted: PersistedBoard,
   ) {
     BoardPanel.panels.set(persisted.project.id, this);
-    panel.iconPath = vscode.Uri.joinPath(deps.extensionUri, 'media', 'projects.svg');
+    panel.iconPath = {
+      light: vscode.Uri.joinPath(deps.extensionUri, 'media', 'projects-light.png'),
+      dark: vscode.Uri.joinPath(deps.extensionUri, 'media', 'projects-dark.png'),
+    };
     panel.webview.html = this.html();
     this.disposables.push(
       panel.onDidDispose(() => this.dispose()),

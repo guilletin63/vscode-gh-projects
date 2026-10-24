@@ -1,4 +1,4 @@
-# GitHub Projects Boards for VS Code
+# GitHub Projects in VS Code
 
 Work with **GitHub Projects (v2)** boards without leaving the editor: the same board you see at
 `github.com/users/<owner>/projects/<n>`, with columns by Status and cards you can move.
@@ -15,7 +15,7 @@ Work with **GitHub Projects (v2)** boards without leaving the editor: the same b
   loaded 100 at a time.
 - **Move cards** by drag & drop, with the **Move** menu or with <kbd>Alt</kbd>+<kbd>←</kbd>/<kbd>→</kbd>.
   The card moves at once; if GitHub rejects the change it goes back and you get a warning.
-- **Filters and search**: free text (`#123`, repository, labels…) plus label, assignee and any
+- **Filters and search**: text search (`#123`, repository, labels…) plus label, assignee and any
   single-select field. Filters are remembered per project and workspace.
 - **Item details**: the issue or pull request body, its project fields (editable), labels and
   assignees, with **Open on GitHub**, **Copy link** and, if the
@@ -27,17 +27,21 @@ Work with **GitHub Projects (v2)** boards without leaving the editor: the same b
 
 ## Installation
 
-1. Download **[vscode-gh-projects-0.1.0.vsix](https://github.com/guilletin63/vscode-gh-projects/releases/latest/download/vscode-gh-projects-0.1.0.vsix)**
-   from the [latest release](https://github.com/guilletin63/vscode-gh-projects/releases/latest).
-2. Install it:
+Install **GitHub Projects in VS Code** from the
+[Visual Studio Marketplace](https://marketplace.visualstudio.com/items?itemName=guilletin63.vscode-gh-projects):
 
-   ```bash
-   code --install-extension vscode-gh-projects-0.1.0.vsix
-   ```
+- In VS Code, open the **Extensions** view (<kbd>Ctrl</kbd>/<kbd>Cmd</kbd>+<kbd>Shift</kbd>+<kbd>X</kbd>),
+  search for **GitHub Projects in VS Code** and choose **Install**, or
+- from a terminal:
 
-   Or in VS Code: **Extensions** view → **…** menu → **Install from VSIX…**.
+  ```bash
+  code --install-extension guilletin63.vscode-gh-projects
+  ```
 
-Requires VS Code 1.99 or later. To build it yourself: `npm ci && npm run package`.
+Requires VS Code 1.99 or later. Each version is also attached to the
+[GitHub releases](https://github.com/guilletin63/vscode-gh-projects/releases) as a `.vsix` file
+(**Extensions** view → **…** → **Install from VSIX…**), and you can build it yourself with
+`npm ci && npm run package`.
 
 ## How to use
 
@@ -89,8 +93,9 @@ Click a card to read its description and edit its project fields. **Open on GitH
 - Sign-in goes through VS Code's built-in GitHub authentication. Reading asks for the
   `read:project` and `repo` scopes. The first time you move a card or edit a field, VS Code asks
   for the `project` scope.
-- Tokens are never written to settings, disk or logs by this extension.
-- No telemetry. The extension only talks to `api.github.com`.
+- The extension keeps nothing of your GitHub session: VS Code holds the sign-in, and nothing is
+  written to settings, disk or logs.
+- No usage data is collected. The extension only talks to `api.github.com`.
 - The board runs in a webview with a strict Content Security Policy and no remote scripts.
 
 ## Settings

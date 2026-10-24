@@ -99,6 +99,22 @@ builds GraphQL; it calls `ProjectsApi` methods that return model types.
   (needs `ffmpeg` and Python with Pillow). `move` and `detail` change a Status and a Priority in
   the sandbox; set them back before recording again.
 
+## Publishing
+
+The extension is published as `guilletin63.vscode-gh-projects` on the Visual Studio Marketplace.
+
+1. Bump `version` in `package.json` and add the entry to `CHANGELOG.md`.
+2. `npm run package` and upload the `.vsix` from the publisher page
+   (**⋮ → Update**), or `npx vsce publish`.
+3. Attach the same `.vsix` to a GitHub release (`v<version>`).
+
+Marketplace upload rules learned the hard way (its only error is a generic "suspicious content"):
+
+- No SVG files in the package (icons are PNG; `media/projects-*.png` are the Activity Bar and
+  panel icons).
+- `CHANGELOG.md` is kept out of the package (`.vscodeignore`); uploads that included it were rejected.
+- Nothing in `package.json` that reads credentials (`$(gh auth token)` lives in `scripts/test-live.mjs`).
+
 ## Conventions
 
 - TypeScript `strict`, no `any` (use `unknown` + narrowing).
