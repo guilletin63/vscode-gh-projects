@@ -63,8 +63,10 @@ builds GraphQL; it calls `ProjectsApi` methods that return model types.
 
 ### Key decisions
 
-- **Auth scopes**: reads use `['read:project', 'repo']`. The first write asks for
-  `['project', 'repo']` (`createIfNone`); from then on that session is preferred for reads too.
+- **Auth scopes**: reads use `['read:project', 'read:org', 'repo']` (organization fields need
+  `read:org`). The first write asks for `['project', 'read:org', 'repo']` (`createIfNone`); from
+  then on that session is preferred for reads too. If organizations still can't be read, the tree
+  falls back to the signed-in user.
 - **Group-by field**: the view's `verticalGroupByFields` ("Column by") when it is single-select,
   else the field named `Status`, else the first single-select field. Items without a value go to
   a "No <field>" column.

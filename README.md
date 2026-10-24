@@ -91,8 +91,8 @@ Click a card to read its description and edit its project fields. **Open on GitH
 ## Permissions and privacy
 
 - Sign-in goes through VS Code's built-in GitHub authentication. Reading asks for the
-  `read:project` and `repo` scopes. The first time you move a card or edit a field, VS Code asks
-  for the `project` scope.
+  `read:project`, `read:org` (to list your organizations) and `repo` scopes. The first time you
+  move a card or edit a field, VS Code asks for the `project` scope.
 - The extension keeps nothing of your GitHub session: VS Code holds the sign-in, and nothing is
   written to settings, disk or logs.
 - No usage data is collected. The extension only talks to `api.github.com`.

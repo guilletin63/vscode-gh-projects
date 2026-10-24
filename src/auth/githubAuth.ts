@@ -1,10 +1,10 @@
 import * as vscode from 'vscode';
 
 export const PROVIDER_ID = 'github';
-/** Enough to read projects (and the private repos their items live in). */
-export const READ_SCOPES = ['read:project', 'repo'];
+/** Enough to read projects, the private repos their items live in, and the user's organizations. */
+export const READ_SCOPES = ['read:project', 'read:org', 'repo'];
 /** Requested only the first time we need to write (move a card, edit a field). */
-export const WRITE_SCOPES = ['project', 'repo'];
+export const WRITE_SCOPES = ['project', 'read:org', 'repo'];
 
 export class NotSignedInError extends Error {
   constructor() {

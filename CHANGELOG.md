@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.0.1
+
+- Fix: the Projects tree showed "Your GitHub session is missing a scope" after signing in. Listing
+  your organizations needs the `read:org` scope, which is now requested (VS Code asks you to sign in
+  once more). If organizations still can't be read, the tree shows your own projects anyway.
+
 ## 1.0.0
 
 First release on the Visual Studio Marketplace.

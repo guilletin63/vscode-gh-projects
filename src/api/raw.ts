@@ -19,7 +19,7 @@ export interface RawOwner {
 }
 
 export interface RawViewerResponse {
-  viewer: RawOwner & { organizations: RawConnection<RawOwner> };
+  viewer: RawOwner & { organizations?: RawConnection<RawOwner> | null };
 }
 
 export interface RawOwnerLookupResponse {

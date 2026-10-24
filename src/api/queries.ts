@@ -14,6 +14,13 @@ export const VIEWER_QUERY = /* GraphQL */ `
   }
 `;
 
+/** Signed-in user only: used when the session can't read organizations (no read:org). */
+export const VIEWER_ONLY_QUERY = /* GraphQL */ `
+  query ViewerOnly {
+    viewer { login name avatarUrl }
+  }
+`;
+
 export const OWNER_LOOKUP_QUERY = /* GraphQL */ `
   query OwnerLookup($login: String!) {
     repositoryOwner(login: $login) {

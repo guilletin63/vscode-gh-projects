@@ -3,6 +3,7 @@ import type { FieldInput } from '../model/edits';
 import { toGraphQLValue } from '../model/edits';
 import type { ItemDetail, Owner, ProjectDetails, ProjectItem, ProjectSummary, ProjectView } from '../model/types';
 import type { GraphQLClient } from './client';
+import { GraphQLError } from './client';
 import { mapItemDetail, mapItems, mapOwnerLookup, mapProjectDetails, mapProjects, mapViewer, mapViews } from './mappers';
 import { paginate } from './paginate';
 import {
@@ -13,6 +14,7 @@ import {
   PROJECT_ITEMS_QUERY,
   PROJECTS_QUERY,
   UPDATE_FIELD_VALUE_MUTATION,
+  VIEWER_ONLY_QUERY,
   VIEWER_QUERY,
   VIEWS_QUERY,
 } from './queries';
@@ -53,12 +55,19 @@ export class GitHubProjectsApi implements ProjectsApi {
 
   async getOwners(): Promise<Owner[]> {
     let viewer: Owner | undefined;
-    const orgs = await paginate(async (cursor) => {
-      const mapped = mapViewer(await this.client.request<RawViewerResponse>(VIEWER_QUERY, { cursor }));
-      viewer = mapped.viewer;
-      return mapped.organizations;
-    });
-    return viewer ? [viewer, ...orgs] : orgs;
+    try {
+      const orgs = await paginate(async (cursor) => {
+        const mapped = mapViewer(await this.client.request<RawViewerResponse>(VIEWER_QUERY, { cursor }));
+        viewer = mapped.viewer;
+        return mapped.organizations;
+      });
+      return viewer ? [viewer, ...orgs] : orgs;
+    } catch (err) {
+      // Organization fields need read:org; without it GitHub rejects the whole query. Still show
+      // the user's own projects (and manually added owners) instead of failing the tree.
+      if (!(err instanceof GraphQLError && err.types.includes('INSUFFICIENT_SCOPES'))) throw err;
+      return [mapViewer(await this.client.request<RawViewerResponse>(VIEWER_ONLY_QUERY)).viewer];
+    }
   }
 
   async lookupOwner(login: string): Promise<Owner | undefined> {
