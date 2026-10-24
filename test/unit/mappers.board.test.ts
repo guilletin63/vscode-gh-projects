@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { mapField, mapFieldValue, mapItem, mapItems, mapProjectDetails } from '../../src/api/mappers';
+import { mapField, mapFieldValue, mapItem, mapItems, mapProjectDetails, mapView } from '../../src/api/mappers';
 import type { RawItem, RawItemsResponse, RawProjectDetailsResponse } from '../../src/api/raw';
 import { fixture } from './fixtures';
 
@@ -32,6 +32,38 @@ describe('mapProjectDetails', () => {
     expect(p.fields.find((f) => f.name === 'Due')?.kind).toBe('date');
     expect(p.fields.find((f) => f.name === 'Notes')?.kind).toBe('text');
     expect(p.fields.find((f) => f.name === 'Status')?.options?.map((o) => o.name)).toEqual(['Todo', 'In Progress', 'Done']);
+  });
+
+  it('maps the fields each view shows (sandbox)', () => {
+    const p = mapProjectDetails(fixture<RawProjectDetailsResponse>('sandbox-project'))!;
+    const names = (ids: string[] | undefined) => ids?.map((id) => p.fields.find((f) => f.id === id)?.name);
+    const table = p.views.find((v) => v.layout === 'table');
+    expect(names(table?.visibleFieldIds)).toEqual(expect.arrayContaining(['Title', 'Status', 'Priority', 'Sprint', 'Due', 'Estimate']));
+    expect(p.views.map((v) => v.layout)).toEqual(expect.arrayContaining(['table', 'board', 'roadmap']));
+  });
+
+  it('maps a view sort and group-by', () => {
+    const ref = (id: string) => ({ id });
+    const view = mapView({
+      id: 'V',
+      number: 1,
+      name: 'Sorted',
+      layout: 'TABLE_LAYOUT',
+      filter: null,
+      fields: { nodes: [ref('A'), null, ref('B')] },
+      sortByFields: { nodes: [{ direction: 'DESC', field: ref('B') }, { direction: 'ASC', field: ref('A') }, { direction: 'ASC', field: null }] },
+      groupByFields: { nodes: [ref('S')] },
+    });
+    expect(view).toMatchObject({
+      visibleFieldIds: ['A', 'B'],
+      sortBy: [
+        { fieldId: 'B', direction: 'desc' },
+        { fieldId: 'A', direction: 'asc' },
+      ],
+      groupByFieldId: 'S',
+    });
+    const bare = mapView({ id: 'V', number: 1, name: 'Old', layout: 'ROADMAP_LAYOUT', filter: null });
+    expect(bare).toEqual({ id: 'V', number: 1, name: 'Old', layout: 'roadmap', filter: '' });
   });
 
   it('returns undefined for a missing node', () => {
@@ -88,6 +120,20 @@ describe('mapItems', () => {
     expect(items.some((i) => i.fieldValues[title.id])).toBe(false);
   });
 
+  it('maps parent issues, sub-issues, linked pull requests and dates', () => {
+    const items = mapItems(fixture<RawItemsResponse>('items-page1'), customIds()).nodes;
+    const child = items.find((i) => i.parent)!;
+    expect(child.parent).toEqual({ number: expect.any(Number), title: expect.stringMatching(/^Sample parent issue/), url: expect.stringMatching(/^https:\/\/github\.com\//) });
+    const epic = items.find((i) => i.subIssues)!;
+    expect(epic.subIssues!.total).toBeGreaterThan(0);
+    expect(epic.subIssues!.completed).toBeLessThanOrEqual(epic.subIssues!.total);
+    const fixed = items.find((i) => i.linkedPullRequests)!;
+    expect(fixed.linkedPullRequests![0]).toEqual({ number: expect.any(Number), url: expect.stringMatching(/\/pull\/\d+$/) });
+    expect(items.every((i) => i.createdAt)).toBe(true);
+    expect(items.some((i) => i.closedAt)).toBe(true);
+    expect(items.some((i) => i.subIssues?.total === 0)).toBe(false);
+  });
+
   it('maps the last page', () => {
     const page = mapItems(fixture<RawItemsResponse>('items-page2'), customIds());
     expect(page.nodes).toHaveLength(page.totalCount - 100);
@@ -118,6 +164,7 @@ describe('mapItem', () => {
 
   it('maps pull requests, drafts and redacted items', () => {
     expect(mapItem(base)).toMatchObject({ type: 'PullRequest', state: 'MERGED', isDraftPullRequest: false, number: 7, assignees: [{ login: 'a' }] });
+    expect(mapItem({ ...base, content: { ...base.content!, milestone: { title: 'v1' } } }).milestone).toBe('v1');
     const draft = mapItem({ ...base, type: 'DRAFT_ISSUE', content: { __typename: 'DraftIssue', id: 'DI_1', title: 'Idea' } });
     expect(draft).toMatchObject({ type: 'DraftIssue', title: 'Idea', labels: [], assignees: [] });
     expect(draft.url).toBeUndefined();

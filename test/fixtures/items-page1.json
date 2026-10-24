@@ -54,6 +54,26 @@
                   "endCursor": null,
                   "hasNextPage": false
                 }
+              },
+              "milestone": null,
+              "createdAt": "2026-10-13T14:22:16Z",
+              "closedAt": "2026-10-13T17:00:21Z",
+              "parent": {
+                "number": 1,
+                "title": "Sample parent issue 1",
+                "url": "https://github.com/octo-user/repo-1/issues/1"
+              },
+              "subIssuesSummary": {
+                "total": 0,
+                "completed": 0
+              },
+              "closedByPullRequestsReferences": {
+                "nodes": [
+                  {
+                    "number": 44,
+                    "url": "https://github.com/octo-user/repo-1/pull/44"
+                  }
+                ]
               }
             },
             "fieldValues": {
@@ -167,6 +187,26 @@
                   "endCursor": null,
                   "hasNextPage": false
                 }
+              },
+              "milestone": null,
+              "createdAt": "2026-10-13T14:22:18Z",
+              "closedAt": "2026-10-13T18:01:51Z",
+              "parent": {
+                "number": 1,
+                "title": "Sample parent issue 1",
+                "url": "https://github.com/octo-user/repo-1/issues/1"
+              },
+              "subIssuesSummary": {
+                "total": 0,
+                "completed": 0
+              },
+              "closedByPullRequestsReferences": {
+                "nodes": [
+                  {
+                    "number": 57,
+                    "url": "https://github.com/octo-user/repo-1/pull/57"
+                  }
+                ]
               }
             },
             "fieldValues": {
@@ -280,6 +320,26 @@
                   "endCursor": null,
                   "hasNextPage": false
                 }
+              },
+              "milestone": null,
+              "createdAt": "2026-10-13T14:22:20Z",
+              "closedAt": "2026-10-13T17:33:42Z",
+              "parent": {
+                "number": 1,
+                "title": "Sample parent issue 1",
+                "url": "https://github.com/octo-user/repo-1/issues/1"
+              },
+              "subIssuesSummary": {
+                "total": 0,
+                "completed": 0
+              },
+              "closedByPullRequestsReferences": {
+                "nodes": [
+                  {
+                    "number": 54,
+                    "url": "https://github.com/octo-user/repo-1/pull/54"
+                  }
+                ]
               }
             },
             "fieldValues": {
@@ -393,6 +453,26 @@
                   "endCursor": null,
                   "hasNextPage": false
                 }
+              },
+              "milestone": null,
+              "createdAt": "2026-10-13T14:22:23Z",
+              "closedAt": "2026-10-13T19:14:30Z",
+              "parent": {
+                "number": 1,
+                "title": "Sample parent issue 1",
+                "url": "https://github.com/octo-user/repo-1/issues/1"
+              },
+              "subIssuesSummary": {
+                "total": 0,
+                "completed": 0
+              },
+              "closedByPullRequestsReferences": {
+                "nodes": [
+                  {
+                    "number": 68,
+                    "url": "https://github.com/octo-user/repo-1/pull/68"
+                  }
+                ]
               }
             },
             "fieldValues": {
@@ -510,6 +590,26 @@
                   "endCursor": null,
                   "hasNextPage": false
                 }
+              },
+              "milestone": null,
+              "createdAt": "2026-10-13T14:22:26Z",
+              "closedAt": "2026-10-14T09:55:17Z",
+              "parent": {
+                "number": 1,
+                "title": "Sample parent issue 1",
+                "url": "https://github.com/octo-user/repo-1/issues/1"
+              },
+              "subIssuesSummary": {
+                "total": 0,
+                "completed": 0
+              },
+              "closedByPullRequestsReferences": {
+                "nodes": [
+                  {
+                    "number": 99,
+                    "url": "https://github.com/octo-user/repo-1/pull/99"
+                  }
+                ]
               }
             },
             "fieldValues": {
@@ -619,6 +719,26 @@
                   "endCursor": null,
                   "hasNextPage": false
                 }
+              },
+              "milestone": null,
+              "createdAt": "2026-10-13T14:22:28Z",
+              "closedAt": "2026-10-14T09:27:48Z",
+              "parent": {
+                "number": 1,
+                "title": "Sample parent issue 1",
+                "url": "https://github.com/octo-user/repo-1/issues/1"
+              },
+              "subIssuesSummary": {
+                "total": 0,
+                "completed": 0
+              },
+              "closedByPullRequestsReferences": {
+                "nodes": [
+                  {
+                    "number": 38,
+                    "url": "https://github.com/octo-user/repo-1/pull/38"
+                  }
+                ]
               }
             },
             "fieldValues": {
@@ -732,6 +852,26 @@
                   "endCursor": null,
                   "hasNextPage": false
                 }
+              },
+              "milestone": null,
+              "createdAt": "2026-10-13T14:22:31Z",
+              "closedAt": "2026-10-13T16:51:15Z",
+              "parent": {
+                "number": 2,
+                "title": "Sample parent issue 2",
+                "url": "https://github.com/octo-user/repo-1/issues/2"
+              },
+              "subIssuesSummary": {
+                "total": 0,
+                "completed": 0
+              },
+              "closedByPullRequestsReferences": {
+                "nodes": [
+                  {
+                    "number": 42,
+                    "url": "https://github.com/octo-user/repo-1/pull/42"
+                  }
+                ]
               }
             },
             "fieldValues": {
@@ -845,6 +985,26 @@
                   "endCursor": null,
                   "hasNextPage": false
                 }
+              },
+              "milestone": null,
+              "createdAt": "2026-10-13T14:22:33Z",
+              "closedAt": "2026-10-13T18:10:03Z",
+              "parent": {
+                "number": 2,
+                "title": "Sample parent issue 2",
+                "url": "https://github.com/octo-user/repo-1/issues/2"
+              },
+              "subIssuesSummary": {
+                "total": 0,
+                "completed": 0
+              },
+              "closedByPullRequestsReferences": {
+                "nodes": [
+                  {
+                    "number": 60,
+                    "url": "https://github.com/octo-user/repo-1/pull/60"
+                  }
+                ]
               }
             },
             "fieldValues": {
@@ -958,6 +1118,26 @@
                   "endCursor": null,
                   "hasNextPage": false
                 }
+              },
+              "milestone": null,
+              "createdAt": "2026-10-13T14:22:36Z",
+              "closedAt": "2026-10-13T19:00:44Z",
+              "parent": {
+                "number": 2,
+                "title": "Sample parent issue 2",
+                "url": "https://github.com/octo-user/repo-1/issues/2"
+              },
+              "subIssuesSummary": {
+                "total": 0,
+                "completed": 0
+              },
+              "closedByPullRequestsReferences": {
+                "nodes": [
+                  {
+                    "number": 66,
+                    "url": "https://github.com/octo-user/repo-1/pull/66"
+                  }
+                ]
               }
             },
             "fieldValues": {
@@ -1071,6 +1251,26 @@
                   "endCursor": null,
                   "hasNextPage": false
                 }
+              },
+              "milestone": null,
+              "createdAt": "2026-10-13T14:22:38Z",
+              "closedAt": "2026-10-13T20:29:21Z",
+              "parent": {
+                "number": 2,
+                "title": "Sample parent issue 2",
+                "url": "https://github.com/octo-user/repo-1/issues/2"
+              },
+              "subIssuesSummary": {
+                "total": 0,
+                "completed": 0
+              },
+              "closedByPullRequestsReferences": {
+                "nodes": [
+                  {
+                    "number": 81,
+                    "url": "https://github.com/octo-user/repo-1/pull/81"
+                  }
+                ]
               }
             },
             "fieldValues": {
@@ -1184,6 +1384,26 @@
                   "endCursor": null,
                   "hasNextPage": false
                 }
+              },
+              "milestone": null,
+              "createdAt": "2026-10-13T14:22:40Z",
+              "closedAt": "2026-10-15T10:25:28Z",
+              "parent": {
+                "number": 2,
+                "title": "Sample parent issue 2",
+                "url": "https://github.com/octo-user/repo-1/issues/2"
+              },
+              "subIssuesSummary": {
+                "total": 0,
+                "completed": 0
+              },
+              "closedByPullRequestsReferences": {
+                "nodes": [
+                  {
+                    "number": 145,
+                    "url": "https://github.com/octo-user/repo-1/pull/145"
+                  }
+                ]
               }
             },
             "fieldValues": {
@@ -1297,6 +1517,26 @@
                   "endCursor": null,
                   "hasNextPage": false
                 }
+              },
+              "milestone": null,
+              "createdAt": "2026-10-13T14:22:43Z",
+              "closedAt": "2026-10-15T12:47:23Z",
+              "parent": {
+                "number": 2,
+                "title": "Sample parent issue 2",
+                "url": "https://github.com/octo-user/repo-1/issues/2"
+              },
+              "subIssuesSummary": {
+                "total": 0,
+                "completed": 0
+              },
+              "closedByPullRequestsReferences": {
+                "nodes": [
+                  {
+                    "number": 148,
+                    "url": "https://github.com/octo-user/repo-1/pull/148"
+                  }
+                ]
               }
             },
             "fieldValues": {
@@ -1414,6 +1654,26 @@
                   "endCursor": null,
                   "hasNextPage": false
                 }
+              },
+              "milestone": null,
+              "createdAt": "2026-10-13T14:22:46Z",
+              "closedAt": "2026-10-16T20:59:15Z",
+              "parent": {
+                "number": 2,
+                "title": "Sample parent issue 2",
+                "url": "https://github.com/octo-user/repo-1/issues/2"
+              },
+              "subIssuesSummary": {
+                "total": 0,
+                "completed": 0
+              },
+              "closedByPullRequestsReferences": {
+                "nodes": [
+                  {
+                    "number": 200,
+                    "url": "https://github.com/octo-user/repo-1/pull/200"
+                  }
+                ]
               }
             },
             "fieldValues": {
@@ -1531,6 +1791,26 @@
                   "endCursor": null,
                   "hasNextPage": false
                 }
+              },
+              "milestone": null,
+              "createdAt": "2026-10-13T14:22:49Z",
+              "closedAt": "2026-10-13T17:08:52Z",
+              "parent": {
+                "number": 3,
+                "title": "Sample parent issue 3",
+                "url": "https://github.com/octo-user/repo-1/issues/3"
+              },
+              "subIssuesSummary": {
+                "total": 0,
+                "completed": 0
+              },
+              "closedByPullRequestsReferences": {
+                "nodes": [
+                  {
+                    "number": 48,
+                    "url": "https://github.com/octo-user/repo-1/pull/48"
+                  }
+                ]
               }
             },
             "fieldValues": {
@@ -1644,6 +1924,26 @@
                   "endCursor": null,
                   "hasNextPage": false
                 }
+              },
+              "milestone": null,
+              "createdAt": "2026-10-13T14:22:51Z",
+              "closedAt": "2026-10-13T19:42:07Z",
+              "parent": {
+                "number": 3,
+                "title": "Sample parent issue 3",
+                "url": "https://github.com/octo-user/repo-1/issues/3"
+              },
+              "subIssuesSummary": {
+                "total": 0,
+                "completed": 0
+              },
+              "closedByPullRequestsReferences": {
+                "nodes": [
+                  {
+                    "number": 69,
+                    "url": "https://github.com/octo-user/repo-1/pull/69"
+                  }
+                ]
               }
             },
             "fieldValues": {
@@ -1757,6 +2057,26 @@
                   "endCursor": null,
                   "hasNextPage": false
                 }
+              },
+              "milestone": null,
+              "createdAt": "2026-10-13T14:22:54Z",
+              "closedAt": "2026-10-13T21:21:25Z",
+              "parent": {
+                "number": 3,
+                "title": "Sample parent issue 3",
+                "url": "https://github.com/octo-user/repo-1/issues/3"
+              },
+              "subIssuesSummary": {
+                "total": 0,
+                "completed": 0
+              },
+              "closedByPullRequestsReferences": {
+                "nodes": [
+                  {
+                    "number": 84,
+                    "url": "https://github.com/octo-user/repo-1/pull/84"
+                  }
+                ]
               }
             },
             "fieldValues": {
@@ -1870,6 +2190,26 @@
                   "endCursor": null,
                   "hasNextPage": false
                 }
+              },
+              "milestone": null,
+              "createdAt": "2026-10-13T14:22:56Z",
+              "closedAt": "2026-10-15T11:27:38Z",
+              "parent": {
+                "number": 3,
+                "title": "Sample parent issue 3",
+                "url": "https://github.com/octo-user/repo-1/issues/3"
+              },
+              "subIssuesSummary": {
+                "total": 0,
+                "completed": 0
+              },
+              "closedByPullRequestsReferences": {
+                "nodes": [
+                  {
+                    "number": 146,
+                    "url": "https://github.com/octo-user/repo-1/pull/146"
+                  }
+                ]
               }
             },
             "fieldValues": {
@@ -1983,6 +2323,26 @@
                   "endCursor": null,
                   "hasNextPage": false
                 }
+              },
+              "milestone": null,
+              "createdAt": "2026-10-13T14:22:59Z",
+              "closedAt": "2026-10-13T22:20:21Z",
+              "parent": {
+                "number": 3,
+                "title": "Sample parent issue 3",
+                "url": "https://github.com/octo-user/repo-1/issues/3"
+              },
+              "subIssuesSummary": {
+                "total": 0,
+                "completed": 0
+              },
+              "closedByPullRequestsReferences": {
+                "nodes": [
+                  {
+                    "number": 105,
+                    "url": "https://github.com/octo-user/repo-1/pull/105"
+                  }
+                ]
               }
             },
             "fieldValues": {
@@ -2096,6 +2456,26 @@
                   "endCursor": null,
                   "hasNextPage": false
                 }
+              },
+              "milestone": null,
+              "createdAt": "2026-10-13T14:23:01Z",
+              "closedAt": "2026-10-15T15:16:12Z",
+              "parent": {
+                "number": 3,
+                "title": "Sample parent issue 3",
+                "url": "https://github.com/octo-user/repo-1/issues/3"
+              },
+              "subIssuesSummary": {
+                "total": 0,
+                "completed": 0
+              },
+              "closedByPullRequestsReferences": {
+                "nodes": [
+                  {
+                    "number": 167,
+                    "url": "https://github.com/octo-user/repo-1/pull/167"
+                  }
+                ]
               }
             },
             "fieldValues": {
@@ -2209,6 +2589,26 @@
                   "endCursor": null,
                   "hasNextPage": false
                 }
+              },
+              "milestone": null,
+              "createdAt": "2026-10-13T14:23:03Z",
+              "closedAt": "2026-10-14T20:14:09Z",
+              "parent": {
+                "number": 3,
+                "title": "Sample parent issue 3",
+                "url": "https://github.com/octo-user/repo-1/issues/3"
+              },
+              "subIssuesSummary": {
+                "total": 3,
+                "completed": 3
+              },
+              "closedByPullRequestsReferences": {
+                "nodes": [
+                  {
+                    "number": 127,
+                    "url": "https://github.com/octo-user/repo-1/pull/127"
+                  }
+                ]
               }
             },
             "fieldValues": {
@@ -2322,6 +2722,26 @@
                   "endCursor": null,
                   "hasNextPage": false
                 }
+              },
+              "milestone": null,
+              "createdAt": "2026-10-13T14:23:05Z",
+              "closedAt": "2026-10-16T12:39:48Z",
+              "parent": {
+                "number": 4,
+                "title": "Sample parent issue 4",
+                "url": "https://github.com/octo-user/repo-1/issues/4"
+              },
+              "subIssuesSummary": {
+                "total": 0,
+                "completed": 0
+              },
+              "closedByPullRequestsReferences": {
+                "nodes": [
+                  {
+                    "number": 164,
+                    "url": "https://github.com/octo-user/repo-1/pull/164"
+                  }
+                ]
               }
             },
             "fieldValues": {
@@ -2435,6 +2855,26 @@
                   "endCursor": null,
                   "hasNextPage": false
                 }
+              },
+              "milestone": null,
+              "createdAt": "2026-10-13T14:23:07Z",
+              "closedAt": "2026-10-16T22:06:55Z",
+              "parent": {
+                "number": 4,
+                "title": "Sample parent issue 4",
+                "url": "https://github.com/octo-user/repo-1/issues/4"
+              },
+              "subIssuesSummary": {
+                "total": 0,
+                "completed": 0
+              },
+              "closedByPullRequestsReferences": {
+                "nodes": [
+                  {
+                    "number": 204,
+                    "url": "https://github.com/octo-user/repo-1/pull/204"
+                  }
+                ]
               }
             },
             "fieldValues": {
@@ -2548,6 +2988,26 @@
                   "endCursor": null,
                   "hasNextPage": false
                 }
+              },
+              "milestone": null,
+              "createdAt": "2026-10-13T14:23:09Z",
+              "closedAt": "2026-10-17T02:44:15Z",
+              "parent": {
+                "number": 4,
+                "title": "Sample parent issue 4",
+                "url": "https://github.com/octo-user/repo-1/issues/4"
+              },
+              "subIssuesSummary": {
+                "total": 0,
+                "completed": 0
+              },
+              "closedByPullRequestsReferences": {
+                "nodes": [
+                  {
+                    "number": 226,
+                    "url": "https://github.com/octo-user/repo-1/pull/226"
+                  }
+                ]
               }
             },
             "fieldValues": {
@@ -2661,6 +3121,21 @@
                   "endCursor": null,
                   "hasNextPage": false
                 }
+              },
+              "milestone": null,
+              "createdAt": "2026-10-13T14:23:12Z",
+              "closedAt": "2026-10-13T19:20:46Z",
+              "parent": {
+                "number": 5,
+                "title": "Sample parent issue 5",
+                "url": "https://github.com/octo-user/repo-1/issues/5"
+              },
+              "subIssuesSummary": {
+                "total": 0,
+                "completed": 0
+              },
+              "closedByPullRequestsReferences": {
+                "nodes": []
               }
             },
             "fieldValues": {
@@ -2771,6 +3246,26 @@
                   "endCursor": null,
                   "hasNextPage": false
                 }
+              },
+              "milestone": null,
+              "createdAt": "2026-10-13T14:23:14Z",
+              "closedAt": "2026-10-13T19:41:27Z",
+              "parent": {
+                "number": 5,
+                "title": "Sample parent issue 5",
+                "url": "https://github.com/octo-user/repo-1/issues/5"
+              },
+              "subIssuesSummary": {
+                "total": 0,
+                "completed": 0
+              },
+              "closedByPullRequestsReferences": {
+                "nodes": [
+                  {
+                    "number": 71,
+                    "url": "https://github.com/octo-user/repo-1/pull/71"
+                  }
+                ]
               }
             },
             "fieldValues": {
@@ -2888,6 +3383,17 @@
                   "endCursor": null,
                   "hasNextPage": false
                 }
+              },
+              "milestone": null,
+              "createdAt": "2026-10-13T14:22:07Z",
+              "closedAt": "2026-10-14T19:01:30Z",
+              "parent": null,
+              "subIssuesSummary": {
+                "total": 12,
+                "completed": 12
+              },
+              "closedByPullRequestsReferences": {
+                "nodes": []
               }
             },
             "fieldValues": {
@@ -3002,6 +3508,17 @@
                   "endCursor": null,
                   "hasNextPage": false
                 }
+              },
+              "milestone": null,
+              "createdAt": "2026-10-13T14:22:08Z",
+              "closedAt": "2026-10-17T13:15:05Z",
+              "parent": null,
+              "subIssuesSummary": {
+                "total": 15,
+                "completed": 15
+              },
+              "closedByPullRequestsReferences": {
+                "nodes": []
               }
             },
             "fieldValues": {
@@ -3124,6 +3641,17 @@
                   "endCursor": null,
                   "hasNextPage": false
                 }
+              },
+              "milestone": null,
+              "createdAt": "2026-10-13T14:22:09Z",
+              "closedAt": "2026-10-17T01:57:15Z",
+              "parent": null,
+              "subIssuesSummary": {
+                "total": 20,
+                "completed": 20
+              },
+              "closedByPullRequestsReferences": {
+                "nodes": []
               }
             },
             "fieldValues": {
@@ -3238,6 +3766,17 @@
                   "endCursor": null,
                   "hasNextPage": false
                 }
+              },
+              "milestone": null,
+              "createdAt": "2026-10-13T14:22:10Z",
+              "closedAt": "2026-10-17T13:15:11Z",
+              "parent": null,
+              "subIssuesSummary": {
+                "total": 6,
+                "completed": 6
+              },
+              "closedByPullRequestsReferences": {
+                "nodes": []
               }
             },
             "fieldValues": {
@@ -3360,6 +3899,17 @@
                   "endCursor": null,
                   "hasNextPage": false
                 }
+              },
+              "milestone": null,
+              "createdAt": "2026-10-13T14:22:11Z",
+              "closedAt": "2026-10-17T08:47:02Z",
+              "parent": null,
+              "subIssuesSummary": {
+                "total": 10,
+                "completed": 10
+              },
+              "closedByPullRequestsReferences": {
+                "nodes": []
               }
             },
             "fieldValues": {
@@ -3470,6 +4020,26 @@
                   "endCursor": null,
                   "hasNextPage": false
                 }
+              },
+              "milestone": null,
+              "createdAt": "2026-10-13T14:22:12Z",
+              "closedAt": "2026-10-13T16:09:29Z",
+              "parent": {
+                "number": 1,
+                "title": "Sample parent issue 1",
+                "url": "https://github.com/octo-user/repo-1/issues/1"
+              },
+              "subIssuesSummary": {
+                "total": 0,
+                "completed": 0
+              },
+              "closedByPullRequestsReferences": {
+                "nodes": [
+                  {
+                    "number": 35,
+                    "url": "https://github.com/octo-user/repo-1/pull/35"
+                  }
+                ]
               }
             },
             "fieldValues": {
@@ -3583,6 +4153,26 @@
                   "endCursor": null,
                   "hasNextPage": false
                 }
+              },
+              "milestone": null,
+              "createdAt": "2026-10-13T14:22:14Z",
+              "closedAt": "2026-10-13T16:28:12Z",
+              "parent": {
+                "number": 1,
+                "title": "Sample parent issue 1",
+                "url": "https://github.com/octo-user/repo-1/issues/1"
+              },
+              "subIssuesSummary": {
+                "total": 0,
+                "completed": 0
+              },
+              "closedByPullRequestsReferences": {
+                "nodes": [
+                  {
+                    "number": 39,
+                    "url": "https://github.com/octo-user/repo-1/pull/39"
+                  }
+                ]
               }
             },
             "fieldValues": {
@@ -3696,6 +4286,22 @@
                   "endCursor": null,
                   "hasNextPage": false
                 }
+              },
+              "milestone": null,
+              "createdAt": "2026-10-13T16:10:04Z",
+              "closedAt": "2026-10-13T19:43:49Z",
+              "parent": null,
+              "subIssuesSummary": {
+                "total": 0,
+                "completed": 0
+              },
+              "closedByPullRequestsReferences": {
+                "nodes": [
+                  {
+                    "number": 72,
+                    "url": "https://github.com/octo-user/repo-1/pull/72"
+                  }
+                ]
               }
             },
             "fieldValues": {
@@ -3817,6 +4423,26 @@
                   "endCursor": null,
                   "hasNextPage": false
                 }
+              },
+              "milestone": null,
+              "createdAt": "2026-10-13T16:33:37Z",
+              "closedAt": "2026-10-16T18:30:06Z",
+              "parent": {
+                "number": 3,
+                "title": "Sample parent issue 3",
+                "url": "https://github.com/octo-user/repo-1/issues/3"
+              },
+              "subIssuesSummary": {
+                "total": 0,
+                "completed": 0
+              },
+              "closedByPullRequestsReferences": {
+                "nodes": [
+                  {
+                    "number": 178,
+                    "url": "https://github.com/octo-user/repo-1/pull/178"
+                  }
+                ]
               }
             },
             "fieldValues": {
@@ -3934,6 +4560,26 @@
                   "endCursor": null,
                   "hasNextPage": false
                 }
+              },
+              "milestone": null,
+              "createdAt": "2026-10-13T16:33:39Z",
+              "closedAt": "2026-10-13T17:22:41Z",
+              "parent": {
+                "number": 3,
+                "title": "Sample parent issue 3",
+                "url": "https://github.com/octo-user/repo-1/issues/3"
+              },
+              "subIssuesSummary": {
+                "total": 0,
+                "completed": 0
+              },
+              "closedByPullRequestsReferences": {
+                "nodes": [
+                  {
+                    "number": 53,
+                    "url": "https://github.com/octo-user/repo-1/pull/53"
+                  }
+                ]
               }
             },
             "fieldValues": {
@@ -4047,6 +4693,26 @@
                   "endCursor": null,
                   "hasNextPage": false
                 }
+              },
+              "milestone": null,
+              "createdAt": "2026-10-13T16:51:44Z",
+              "closedAt": "2026-10-17T08:07:45Z",
+              "parent": {
+                "number": 2,
+                "title": "Sample parent issue 2",
+                "url": "https://github.com/octo-user/repo-1/issues/2"
+              },
+              "subIssuesSummary": {
+                "total": 0,
+                "completed": 0
+              },
+              "closedByPullRequestsReferences": {
+                "nodes": [
+                  {
+                    "number": 230,
+                    "url": "https://github.com/octo-user/repo-1/pull/230"
+                  }
+                ]
               }
             },
             "fieldValues": {
@@ -4160,6 +4826,26 @@
                   "endCursor": null,
                   "hasNextPage": false
                 }
+              },
+              "milestone": null,
+              "createdAt": "2026-10-13T16:52:53Z",
+              "closedAt": "2026-10-13T17:20:00Z",
+              "parent": {
+                "number": 1,
+                "title": "Sample parent issue 1",
+                "url": "https://github.com/octo-user/repo-1/issues/1"
+              },
+              "subIssuesSummary": {
+                "total": 0,
+                "completed": 0
+              },
+              "closedByPullRequestsReferences": {
+                "nodes": [
+                  {
+                    "number": 51,
+                    "url": "https://github.com/octo-user/repo-1/pull/51"
+                  }
+                ]
               }
             },
             "fieldValues": {
@@ -4273,6 +4959,26 @@
                   "endCursor": null,
                   "hasNextPage": false
                 }
+              },
+              "milestone": null,
+              "createdAt": "2026-10-13T16:52:55Z",
+              "closedAt": "2026-10-13T17:47:21Z",
+              "parent": {
+                "number": 3,
+                "title": "Sample parent issue 3",
+                "url": "https://github.com/octo-user/repo-1/issues/3"
+              },
+              "subIssuesSummary": {
+                "total": 0,
+                "completed": 0
+              },
+              "closedByPullRequestsReferences": {
+                "nodes": [
+                  {
+                    "number": 56,
+                    "url": "https://github.com/octo-user/repo-1/pull/56"
+                  }
+                ]
               }
             },
             "fieldValues": {
@@ -4386,6 +5092,26 @@
                   "endCursor": null,
                   "hasNextPage": false
                 }
+              },
+              "milestone": null,
+              "createdAt": "2026-10-13T17:19:01Z",
+              "closedAt": "2026-10-13T19:58:30Z",
+              "parent": {
+                "number": 1,
+                "title": "Sample parent issue 1",
+                "url": "https://github.com/octo-user/repo-1/issues/1"
+              },
+              "subIssuesSummary": {
+                "total": 0,
+                "completed": 0
+              },
+              "closedByPullRequestsReferences": {
+                "nodes": [
+                  {
+                    "number": 74,
+                    "url": "https://github.com/octo-user/repo-1/pull/74"
+                  }
+                ]
               }
             },
             "fieldValues": {
@@ -4499,6 +5225,26 @@
                   "endCursor": null,
                   "hasNextPage": false
                 }
+              },
+              "milestone": null,
+              "createdAt": "2026-10-13T17:34:06Z",
+              "closedAt": "2026-10-17T14:09:43Z",
+              "parent": {
+                "number": 241,
+                "title": "Sample parent issue 241",
+                "url": "https://github.com/octo-user/repo-1/issues/241"
+              },
+              "subIssuesSummary": {
+                "total": 0,
+                "completed": 0
+              },
+              "closedByPullRequestsReferences": {
+                "nodes": [
+                  {
+                    "number": 249,
+                    "url": "https://github.com/octo-user/repo-1/pull/249"
+                  }
+                ]
               }
             },
             "fieldValues": {
@@ -4612,6 +5358,26 @@
                   "endCursor": null,
                   "hasNextPage": false
                 }
+              },
+              "milestone": null,
+              "createdAt": "2026-10-13T17:59:17Z",
+              "closedAt": "2026-10-13T18:35:50Z",
+              "parent": {
+                "number": 1,
+                "title": "Sample parent issue 1",
+                "url": "https://github.com/octo-user/repo-1/issues/1"
+              },
+              "subIssuesSummary": {
+                "total": 0,
+                "completed": 0
+              },
+              "closedByPullRequestsReferences": {
+                "nodes": [
+                  {
+                    "number": 64,
+                    "url": "https://github.com/octo-user/repo-1/pull/64"
+                  }
+                ]
               }
             },
             "fieldValues": {
@@ -4725,6 +5491,26 @@
                   "endCursor": null,
                   "hasNextPage": false
                 }
+              },
+              "milestone": null,
+              "createdAt": "2026-10-13T17:59:18Z",
+              "closedAt": "2026-10-13T18:49:34Z",
+              "parent": {
+                "number": 3,
+                "title": "Sample parent issue 3",
+                "url": "https://github.com/octo-user/repo-1/issues/3"
+              },
+              "subIssuesSummary": {
+                "total": 0,
+                "completed": 0
+              },
+              "closedByPullRequestsReferences": {
+                "nodes": [
+                  {
+                    "number": 62,
+                    "url": "https://github.com/octo-user/repo-1/pull/62"
+                  }
+                ]
               }
             },
             "fieldValues": {
@@ -4838,6 +5624,26 @@
                   "endCursor": null,
                   "hasNextPage": false
                 }
+              },
+              "milestone": null,
+              "createdAt": "2026-10-13T18:15:43Z",
+              "closedAt": "2026-10-13T19:28:43Z",
+              "parent": {
+                "number": 2,
+                "title": "Sample parent issue 2",
+                "url": "https://github.com/octo-user/repo-1/issues/2"
+              },
+              "subIssuesSummary": {
+                "total": 0,
+                "completed": 0
+              },
+              "closedByPullRequestsReferences": {
+                "nodes": [
+                  {
+                    "number": 70,
+                    "url": "https://github.com/octo-user/repo-1/pull/70"
+                  }
+                ]
               }
             },
             "fieldValues": {
@@ -4951,6 +5757,22 @@
                   "endCursor": null,
                   "hasNextPage": false
                 }
+              },
+              "milestone": null,
+              "createdAt": "2026-10-13T18:24:16Z",
+              "closedAt": "2026-10-13T18:50:36Z",
+              "parent": null,
+              "subIssuesSummary": {
+                "total": 0,
+                "completed": 0
+              },
+              "closedByPullRequestsReferences": {
+                "nodes": [
+                  {
+                    "number": 65,
+                    "url": "https://github.com/octo-user/repo-1/pull/65"
+                  }
+                ]
               }
             },
             "fieldValues": {
@@ -5064,6 +5886,26 @@
                   "endCursor": null,
                   "hasNextPage": false
                 }
+              },
+              "milestone": null,
+              "createdAt": "2026-10-13T18:57:50Z",
+              "closedAt": "2026-10-16T13:09:13Z",
+              "parent": {
+                "number": 2,
+                "title": "Sample parent issue 2",
+                "url": "https://github.com/octo-user/repo-1/issues/2"
+              },
+              "subIssuesSummary": {
+                "total": 0,
+                "completed": 0
+              },
+              "closedByPullRequestsReferences": {
+                "nodes": [
+                  {
+                    "number": 179,
+                    "url": "https://github.com/octo-user/repo-1/pull/179"
+                  }
+                ]
               }
             },
             "fieldValues": {
@@ -5177,6 +6019,22 @@
                   "endCursor": null,
                   "hasNextPage": false
                 }
+              },
+              "milestone": null,
+              "createdAt": "2026-10-13T19:42:42Z",
+              "closedAt": "2026-10-13T21:15:24Z",
+              "parent": null,
+              "subIssuesSummary": {
+                "total": 0,
+                "completed": 0
+              },
+              "closedByPullRequestsReferences": {
+                "nodes": [
+                  {
+                    "number": 94,
+                    "url": "https://github.com/octo-user/repo-1/pull/94"
+                  }
+                ]
               }
             },
             "fieldValues": {
@@ -5294,6 +6152,22 @@
                   "endCursor": null,
                   "hasNextPage": false
                 }
+              },
+              "milestone": null,
+              "createdAt": "2026-10-13T20:00:15Z",
+              "closedAt": "2026-10-13T20:11:51Z",
+              "parent": null,
+              "subIssuesSummary": {
+                "total": 0,
+                "completed": 0
+              },
+              "closedByPullRequestsReferences": {
+                "nodes": [
+                  {
+                    "number": 80,
+                    "url": "https://github.com/octo-user/repo-1/pull/80"
+                  }
+                ]
               }
             },
             "fieldValues": {
@@ -5407,6 +6281,22 @@
                   "endCursor": null,
                   "hasNextPage": false
                 }
+              },
+              "milestone": null,
+              "createdAt": "2026-10-13T20:00:28Z",
+              "closedAt": "2026-10-13T20:11:34Z",
+              "parent": null,
+              "subIssuesSummary": {
+                "total": 0,
+                "completed": 0
+              },
+              "closedByPullRequestsReferences": {
+                "nodes": [
+                  {
+                    "number": 77,
+                    "url": "https://github.com/octo-user/repo-1/pull/77"
+                  }
+                ]
               }
             },
             "fieldValues": {
@@ -5520,6 +6410,26 @@
                   "endCursor": null,
                   "hasNextPage": false
                 }
+              },
+              "milestone": null,
+              "createdAt": "2026-10-13T20:03:24Z",
+              "closedAt": "2026-10-13T20:54:35Z",
+              "parent": {
+                "number": 27,
+                "title": "Sample parent issue 27",
+                "url": "https://github.com/octo-user/repo-1/issues/27"
+              },
+              "subIssuesSummary": {
+                "total": 0,
+                "completed": 0
+              },
+              "closedByPullRequestsReferences": {
+                "nodes": [
+                  {
+                    "number": 88,
+                    "url": "https://github.com/octo-user/repo-1/pull/88"
+                  }
+                ]
               }
             },
             "fieldValues": {
@@ -5633,6 +6543,26 @@
                   "endCursor": null,
                   "hasNextPage": false
                 }
+              },
+              "milestone": null,
+              "createdAt": "2026-10-13T20:03:25Z",
+              "closedAt": "2026-10-14T17:49:07Z",
+              "parent": {
+                "number": 27,
+                "title": "Sample parent issue 27",
+                "url": "https://github.com/octo-user/repo-1/issues/27"
+              },
+              "subIssuesSummary": {
+                "total": 0,
+                "completed": 0
+              },
+              "closedByPullRequestsReferences": {
+                "nodes": [
+                  {
+                    "number": 123,
+                    "url": "https://github.com/octo-user/repo-1/pull/123"
+                  }
+                ]
               }
             },
             "fieldValues": {
@@ -5746,6 +6676,22 @@
                   "endCursor": null,
                   "hasNextPage": false
                 }
+              },
+              "milestone": null,
+              "createdAt": "2026-10-13T20:12:22Z",
+              "closedAt": "2026-10-13T21:21:48Z",
+              "parent": null,
+              "subIssuesSummary": {
+                "total": 0,
+                "completed": 0
+              },
+              "closedByPullRequestsReferences": {
+                "nodes": [
+                  {
+                    "number": 103,
+                    "url": "https://github.com/octo-user/repo-1/pull/103"
+                  }
+                ]
               }
             },
             "fieldValues": {
@@ -5859,6 +6805,26 @@
                   "endCursor": null,
                   "hasNextPage": false
                 }
+              },
+              "milestone": null,
+              "createdAt": "2026-10-13T20:24:09Z",
+              "closedAt": "2026-10-14T06:16:22Z",
+              "parent": {
+                "number": 1,
+                "title": "Sample parent issue 1",
+                "url": "https://github.com/octo-user/repo-1/issues/1"
+              },
+              "subIssuesSummary": {
+                "total": 0,
+                "completed": 0
+              },
+              "closedByPullRequestsReferences": {
+                "nodes": [
+                  {
+                    "number": 92,
+                    "url": "https://github.com/octo-user/repo-1/pull/92"
+                  }
+                ]
               }
             },
             "fieldValues": {
@@ -5972,6 +6938,22 @@
                   "endCursor": null,
                   "hasNextPage": false
                 }
+              },
+              "milestone": null,
+              "createdAt": "2026-10-13T20:33:01Z",
+              "closedAt": "2026-10-13T21:46:43Z",
+              "parent": null,
+              "subIssuesSummary": {
+                "total": 0,
+                "completed": 0
+              },
+              "closedByPullRequestsReferences": {
+                "nodes": [
+                  {
+                    "number": 102,
+                    "url": "https://github.com/octo-user/repo-1/pull/102"
+                  }
+                ]
               }
             },
             "fieldValues": {
@@ -6085,6 +7067,26 @@
                   "endCursor": null,
                   "hasNextPage": false
                 }
+              },
+              "milestone": null,
+              "createdAt": "2026-10-13T20:34:05Z",
+              "closedAt": "2026-10-14T14:47:18Z",
+              "parent": {
+                "number": 2,
+                "title": "Sample parent issue 2",
+                "url": "https://github.com/octo-user/repo-1/issues/2"
+              },
+              "subIssuesSummary": {
+                "total": 0,
+                "completed": 0
+              },
+              "closedByPullRequestsReferences": {
+                "nodes": [
+                  {
+                    "number": 110,
+                    "url": "https://github.com/octo-user/repo-1/pull/110"
+                  }
+                ]
               }
             },
             "fieldValues": {
@@ -6198,6 +7200,26 @@
                   "endCursor": null,
                   "hasNextPage": false
                 }
+              },
+              "milestone": null,
+              "createdAt": "2026-10-13T20:34:07Z",
+              "closedAt": "2026-10-14T17:49:28Z",
+              "parent": {
+                "number": 3,
+                "title": "Sample parent issue 3",
+                "url": "https://github.com/octo-user/repo-1/issues/3"
+              },
+              "subIssuesSummary": {
+                "total": 0,
+                "completed": 0
+              },
+              "closedByPullRequestsReferences": {
+                "nodes": [
+                  {
+                    "number": 124,
+                    "url": "https://github.com/octo-user/repo-1/pull/124"
+                  }
+                ]
               }
             },
             "fieldValues": {
@@ -6311,6 +7333,22 @@
                   "endCursor": null,
                   "hasNextPage": false
                 }
+              },
+              "milestone": null,
+              "createdAt": "2026-10-13T20:35:08Z",
+              "closedAt": "2026-10-16T15:17:58Z",
+              "parent": null,
+              "subIssuesSummary": {
+                "total": 0,
+                "completed": 0
+              },
+              "closedByPullRequestsReferences": {
+                "nodes": [
+                  {
+                    "number": 194,
+                    "url": "https://github.com/octo-user/repo-1/pull/194"
+                  }
+                ]
               }
             },
             "fieldValues": {
@@ -6424,6 +7462,17 @@
                   "endCursor": null,
                   "hasNextPage": false
                 }
+              },
+              "milestone": null,
+              "createdAt": "2026-10-13T20:35:10Z",
+              "closedAt": "2026-10-13T21:04:43Z",
+              "parent": null,
+              "subIssuesSummary": {
+                "total": 0,
+                "completed": 0
+              },
+              "closedByPullRequestsReferences": {
+                "nodes": []
               }
             },
             "fieldValues": {
@@ -6534,6 +7583,22 @@
                   "endCursor": null,
                   "hasNextPage": false
                 }
+              },
+              "milestone": null,
+              "createdAt": "2026-10-13T20:44:51Z",
+              "closedAt": "2026-10-13T21:21:41Z",
+              "parent": null,
+              "subIssuesSummary": {
+                "total": 0,
+                "completed": 0
+              },
+              "closedByPullRequestsReferences": {
+                "nodes": [
+                  {
+                    "number": 103,
+                    "url": "https://github.com/octo-user/repo-1/pull/103"
+                  }
+                ]
               }
             },
             "fieldValues": {
@@ -6639,6 +7704,22 @@
                   "endCursor": null,
                   "hasNextPage": false
                 }
+              },
+              "milestone": null,
+              "createdAt": "2026-10-13T20:51:39Z",
+              "closedAt": "2026-10-14T06:16:22Z",
+              "parent": null,
+              "subIssuesSummary": {
+                "total": 0,
+                "completed": 0
+              },
+              "closedByPullRequestsReferences": {
+                "nodes": [
+                  {
+                    "number": 92,
+                    "url": "https://github.com/octo-user/repo-1/pull/92"
+                  }
+                ]
               }
             },
             "fieldValues": {
@@ -6752,6 +7833,26 @@
                   "endCursor": null,
                   "hasNextPage": false
                 }
+              },
+              "milestone": null,
+              "createdAt": "2026-10-13T20:53:43Z",
+              "closedAt": "2026-10-14T10:02:01Z",
+              "parent": {
+                "number": 2,
+                "title": "Sample parent issue 2",
+                "url": "https://github.com/octo-user/repo-1/issues/2"
+              },
+              "subIssuesSummary": {
+                "total": 0,
+                "completed": 0
+              },
+              "closedByPullRequestsReferences": {
+                "nodes": [
+                  {
+                    "number": 106,
+                    "url": "https://github.com/octo-user/repo-1/pull/106"
+                  }
+                ]
               }
             },
             "fieldValues": {
@@ -6869,6 +7970,26 @@
                   "endCursor": null,
                   "hasNextPage": false
                 }
+              },
+              "milestone": null,
+              "createdAt": "2026-10-13T20:53:45Z",
+              "closedAt": "2026-10-14T10:18:20Z",
+              "parent": {
+                "number": 3,
+                "title": "Sample parent issue 3",
+                "url": "https://github.com/octo-user/repo-1/issues/3"
+              },
+              "subIssuesSummary": {
+                "total": 0,
+                "completed": 0
+              },
+              "closedByPullRequestsReferences": {
+                "nodes": [
+                  {
+                    "number": 111,
+                    "url": "https://github.com/octo-user/repo-1/pull/111"
+                  }
+                ]
               }
             },
             "fieldValues": {
@@ -6982,6 +8103,26 @@
                   "endCursor": null,
                   "hasNextPage": false
                 }
+              },
+              "milestone": null,
+              "createdAt": "2026-10-13T21:11:05Z",
+              "closedAt": "2026-10-14T14:48:01Z",
+              "parent": {
+                "number": 5,
+                "title": "Sample parent issue 5",
+                "url": "https://github.com/octo-user/repo-1/issues/5"
+              },
+              "subIssuesSummary": {
+                "total": 0,
+                "completed": 0
+              },
+              "closedByPullRequestsReferences": {
+                "nodes": [
+                  {
+                    "number": 112,
+                    "url": "https://github.com/octo-user/repo-1/pull/112"
+                  }
+                ]
               }
             },
             "fieldValues": {
@@ -7095,6 +8236,26 @@
                   "endCursor": null,
                   "hasNextPage": false
                 }
+              },
+              "milestone": null,
+              "createdAt": "2026-10-13T21:27:23Z",
+              "closedAt": "2026-10-15T12:47:50Z",
+              "parent": {
+                "number": 3,
+                "title": "Sample parent issue 3",
+                "url": "https://github.com/octo-user/repo-1/issues/3"
+              },
+              "subIssuesSummary": {
+                "total": 0,
+                "completed": 0
+              },
+              "closedByPullRequestsReferences": {
+                "nodes": [
+                  {
+                    "number": 159,
+                    "url": "https://github.com/octo-user/repo-1/pull/159"
+                  }
+                ]
               }
             },
             "fieldValues": {
@@ -7208,6 +8369,26 @@
                   "endCursor": null,
                   "hasNextPage": false
                 }
+              },
+              "milestone": null,
+              "createdAt": "2026-10-13T21:27:25Z",
+              "closedAt": "2026-10-15T17:19:30Z",
+              "parent": {
+                "number": 3,
+                "title": "Sample parent issue 3",
+                "url": "https://github.com/octo-user/repo-1/issues/3"
+              },
+              "subIssuesSummary": {
+                "total": 0,
+                "completed": 0
+              },
+              "closedByPullRequestsReferences": {
+                "nodes": [
+                  {
+                    "number": 180,
+                    "url": "https://github.com/octo-user/repo-1/pull/180"
+                  }
+                ]
               }
             },
             "fieldValues": {
@@ -7321,6 +8502,22 @@
                   "endCursor": null,
                   "hasNextPage": false
                 }
+              },
+              "milestone": null,
+              "createdAt": "2026-10-13T21:44:37Z",
+              "closedAt": "2026-10-14T06:16:23Z",
+              "parent": null,
+              "subIssuesSummary": {
+                "total": 0,
+                "completed": 0
+              },
+              "closedByPullRequestsReferences": {
+                "nodes": [
+                  {
+                    "number": 92,
+                    "url": "https://github.com/octo-user/repo-1/pull/92"
+                  }
+                ]
               }
             },
             "fieldValues": {
@@ -7434,6 +8631,26 @@
                   "endCursor": null,
                   "hasNextPage": false
                 }
+              },
+              "milestone": null,
+              "createdAt": "2026-10-13T22:23:33Z",
+              "closedAt": "2026-10-17T13:35:14Z",
+              "parent": {
+                "number": 241,
+                "title": "Sample parent issue 241",
+                "url": "https://github.com/octo-user/repo-1/issues/241"
+              },
+              "subIssuesSummary": {
+                "total": 0,
+                "completed": 0
+              },
+              "closedByPullRequestsReferences": {
+                "nodes": [
+                  {
+                    "number": 238,
+                    "url": "https://github.com/octo-user/repo-1/pull/238"
+                  }
+                ]
               }
             },
             "fieldValues": {
@@ -7547,6 +8764,26 @@
                   "endCursor": null,
                   "hasNextPage": false
                 }
+              },
+              "milestone": null,
+              "createdAt": "2026-10-13T22:35:06Z",
+              "closedAt": "2026-10-15T18:49:48Z",
+              "parent": {
+                "number": 3,
+                "title": "Sample parent issue 3",
+                "url": "https://github.com/octo-user/repo-1/issues/3"
+              },
+              "subIssuesSummary": {
+                "total": 0,
+                "completed": 0
+              },
+              "closedByPullRequestsReferences": {
+                "nodes": [
+                  {
+                    "number": 185,
+                    "url": "https://github.com/octo-user/repo-1/pull/185"
+                  }
+                ]
               }
             },
             "fieldValues": {
@@ -7660,6 +8897,17 @@
                   "endCursor": null,
                   "hasNextPage": false
                 }
+              },
+              "milestone": null,
+              "createdAt": "2026-10-14T05:22:15Z",
+              "closedAt": "2026-10-14T06:03:11Z",
+              "parent": null,
+              "subIssuesSummary": {
+                "total": 0,
+                "completed": 0
+              },
+              "closedByPullRequestsReferences": {
+                "nodes": []
               }
             },
             "fieldValues": {
@@ -7770,6 +9018,22 @@
                   "endCursor": null,
                   "hasNextPage": false
                 }
+              },
+              "milestone": null,
+              "createdAt": "2026-10-14T05:49:50Z",
+              "closedAt": "2026-10-15T12:46:53Z",
+              "parent": null,
+              "subIssuesSummary": {
+                "total": 0,
+                "completed": 0
+              },
+              "closedByPullRequestsReferences": {
+                "nodes": [
+                  {
+                    "number": 147,
+                    "url": "https://github.com/octo-user/repo-1/pull/147"
+                  }
+                ]
               }
             },
             "fieldValues": {
@@ -7883,6 +9147,22 @@
                   "endCursor": null,
                   "hasNextPage": false
                 }
+              },
+              "milestone": null,
+              "createdAt": "2026-10-14T06:16:44Z",
+              "closedAt": "2026-10-14T09:21:58Z",
+              "parent": null,
+              "subIssuesSummary": {
+                "total": 0,
+                "completed": 0
+              },
+              "closedByPullRequestsReferences": {
+                "nodes": [
+                  {
+                    "number": 117,
+                    "url": "https://github.com/octo-user/repo-1/pull/117"
+                  }
+                ]
               }
             },
             "fieldValues": {
@@ -7996,6 +9276,26 @@
                   "endCursor": null,
                   "hasNextPage": false
                 }
+              },
+              "milestone": null,
+              "createdAt": "2026-10-14T14:48:39Z",
+              "closedAt": "2026-10-17T14:38:55Z",
+              "parent": {
+                "number": 241,
+                "title": "Sample parent issue 241",
+                "url": "https://github.com/octo-user/repo-1/issues/241"
+              },
+              "subIssuesSummary": {
+                "total": 0,
+                "completed": 0
+              },
+              "closedByPullRequestsReferences": {
+                "nodes": [
+                  {
+                    "number": 250,
+                    "url": "https://github.com/octo-user/repo-1/pull/250"
+                  }
+                ]
               }
             },
             "fieldValues": {
@@ -8109,6 +9409,22 @@
                   "endCursor": null,
                   "hasNextPage": false
                 }
+              },
+              "milestone": null,
+              "createdAt": "2026-10-14T14:52:42Z",
+              "closedAt": "2026-10-14T15:04:30Z",
+              "parent": null,
+              "subIssuesSummary": {
+                "total": 0,
+                "completed": 0
+              },
+              "closedByPullRequestsReferences": {
+                "nodes": [
+                  {
+                    "number": 120,
+                    "url": "https://github.com/octo-user/repo-1/pull/120"
+                  }
+                ]
               }
             },
             "fieldValues": {
@@ -8222,6 +9538,26 @@
                   "endCursor": null,
                   "hasNextPage": false
                 }
+              },
+              "milestone": null,
+              "createdAt": "2026-10-14T16:27:30Z",
+              "closedAt": "2026-10-14T18:00:11Z",
+              "parent": {
+                "number": 27,
+                "title": "Sample parent issue 27",
+                "url": "https://github.com/octo-user/repo-1/issues/27"
+              },
+              "subIssuesSummary": {
+                "total": 0,
+                "completed": 0
+              },
+              "closedByPullRequestsReferences": {
+                "nodes": [
+                  {
+                    "number": 125,
+                    "url": "https://github.com/octo-user/repo-1/pull/125"
+                  }
+                ]
               }
             },
             "fieldValues": {
@@ -8339,6 +9675,26 @@
                   "endCursor": null,
                   "hasNextPage": false
                 }
+              },
+              "milestone": null,
+              "createdAt": "2026-10-14T16:27:32Z",
+              "closedAt": "2026-10-14T19:18:57Z",
+              "parent": {
+                "number": 2,
+                "title": "Sample parent issue 2",
+                "url": "https://github.com/octo-user/repo-1/issues/2"
+              },
+              "subIssuesSummary": {
+                "total": 0,
+                "completed": 0
+              },
+              "closedByPullRequestsReferences": {
+                "nodes": [
+                  {
+                    "number": 126,
+                    "url": "https://github.com/octo-user/repo-1/pull/126"
+                  }
+                ]
               }
             },
             "fieldValues": {
@@ -8460,6 +9816,26 @@
                   "endCursor": null,
                   "hasNextPage": false
                 }
+              },
+              "milestone": null,
+              "createdAt": "2026-10-14T18:48:07Z",
+              "closedAt": "2026-10-15T08:01:47Z",
+              "parent": {
+                "number": 5,
+                "title": "Sample parent issue 5",
+                "url": "https://github.com/octo-user/repo-1/issues/5"
+              },
+              "subIssuesSummary": {
+                "total": 0,
+                "completed": 0
+              },
+              "closedByPullRequestsReferences": {
+                "nodes": [
+                  {
+                    "number": 137,
+                    "url": "https://github.com/octo-user/repo-1/pull/137"
+                  }
+                ]
               }
             },
             "fieldValues": {
@@ -8573,6 +9949,26 @@
                   "endCursor": null,
                   "hasNextPage": false
                 }
+              },
+              "milestone": null,
+              "createdAt": "2026-10-14T19:12:03Z",
+              "closedAt": "2026-10-15T07:07:44Z",
+              "parent": {
+                "number": 2,
+                "title": "Sample parent issue 2",
+                "url": "https://github.com/octo-user/repo-1/issues/2"
+              },
+              "subIssuesSummary": {
+                "total": 0,
+                "completed": 0
+              },
+              "closedByPullRequestsReferences": {
+                "nodes": [
+                  {
+                    "number": 134,
+                    "url": "https://github.com/octo-user/repo-1/pull/134"
+                  }
+                ]
               }
             },
             "fieldValues": {
@@ -8686,6 +10082,26 @@
                   "endCursor": null,
                   "hasNextPage": false
                 }
+              },
+              "milestone": null,
+              "createdAt": "2026-10-14T19:12:19Z",
+              "closedAt": "2026-10-15T07:37:50Z",
+              "parent": {
+                "number": 3,
+                "title": "Sample parent issue 3",
+                "url": "https://github.com/octo-user/repo-1/issues/3"
+              },
+              "subIssuesSummary": {
+                "total": 0,
+                "completed": 0
+              },
+              "closedByPullRequestsReferences": {
+                "nodes": [
+                  {
+                    "number": 140,
+                    "url": "https://github.com/octo-user/repo-1/pull/140"
+                  }
+                ]
               }
             },
             "fieldValues": {
@@ -8803,6 +10219,26 @@
                   "endCursor": null,
                   "hasNextPage": false
                 }
+              },
+              "milestone": null,
+              "createdAt": "2026-10-14T19:32:44Z",
+              "closedAt": "2026-10-15T08:39:14Z",
+              "parent": {
+                "number": 5,
+                "title": "Sample parent issue 5",
+                "url": "https://github.com/octo-user/repo-1/issues/5"
+              },
+              "subIssuesSummary": {
+                "total": 0,
+                "completed": 0
+              },
+              "closedByPullRequestsReferences": {
+                "nodes": [
+                  {
+                    "number": 143,
+                    "url": "https://github.com/octo-user/repo-1/pull/143"
+                  }
+                ]
               }
             },
             "fieldValues": {
@@ -8920,6 +10356,26 @@
                   "endCursor": null,
                   "hasNextPage": false
                 }
+              },
+              "milestone": null,
+              "createdAt": "2026-10-14T20:14:41Z",
+              "closedAt": "2026-10-15T20:12:22Z",
+              "parent": {
+                "number": 3,
+                "title": "Sample parent issue 3",
+                "url": "https://github.com/octo-user/repo-1/issues/3"
+              },
+              "subIssuesSummary": {
+                "total": 0,
+                "completed": 0
+              },
+              "closedByPullRequestsReferences": {
+                "nodes": [
+                  {
+                    "number": 188,
+                    "url": "https://github.com/octo-user/repo-1/pull/188"
+                  }
+                ]
               }
             },
             "fieldValues": {
@@ -9033,6 +10489,26 @@
                   "endCursor": null,
                   "hasNextPage": false
                 }
+              },
+              "milestone": null,
+              "createdAt": "2026-10-14T20:14:42Z",
+              "closedAt": "2026-10-15T18:19:51Z",
+              "parent": {
+                "number": 5,
+                "title": "Sample parent issue 5",
+                "url": "https://github.com/octo-user/repo-1/issues/5"
+              },
+              "subIssuesSummary": {
+                "total": 0,
+                "completed": 0
+              },
+              "closedByPullRequestsReferences": {
+                "nodes": [
+                  {
+                    "number": 184,
+                    "url": "https://github.com/octo-user/repo-1/pull/184"
+                  }
+                ]
               }
             },
             "fieldValues": {
@@ -9146,6 +10622,26 @@
                   "endCursor": null,
                   "hasNextPage": false
                 }
+              },
+              "milestone": null,
+              "createdAt": "2026-10-14T20:33:57Z",
+              "closedAt": "2026-10-14T21:14:50Z",
+              "parent": {
+                "number": 5,
+                "title": "Sample parent issue 5",
+                "url": "https://github.com/octo-user/repo-1/issues/5"
+              },
+              "subIssuesSummary": {
+                "total": 0,
+                "completed": 0
+              },
+              "closedByPullRequestsReferences": {
+                "nodes": [
+                  {
+                    "number": 139,
+                    "url": "https://github.com/octo-user/repo-1/pull/139"
+                  }
+                ]
               }
             },
             "fieldValues": {
@@ -9259,6 +10755,22 @@
                   "endCursor": null,
                   "hasNextPage": false
                 }
+              },
+              "milestone": null,
+              "createdAt": "2026-10-15T07:39:46Z",
+              "closedAt": "2026-10-16T14:33:36Z",
+              "parent": null,
+              "subIssuesSummary": {
+                "total": 0,
+                "completed": 0
+              },
+              "closedByPullRequestsReferences": {
+                "nodes": [
+                  {
+                    "number": 193,
+                    "url": "https://github.com/octo-user/repo-1/pull/193"
+                  }
+                ]
               }
             },
             "fieldValues": {
@@ -9372,6 +10884,22 @@
                   "endCursor": null,
                   "hasNextPage": false
                 }
+              },
+              "milestone": null,
+              "createdAt": "2026-10-15T08:26:51Z",
+              "closedAt": "2026-10-15T19:24:21Z",
+              "parent": null,
+              "subIssuesSummary": {
+                "total": 0,
+                "completed": 0
+              },
+              "closedByPullRequestsReferences": {
+                "nodes": [
+                  {
+                    "number": 187,
+                    "url": "https://github.com/octo-user/repo-1/pull/187"
+                  }
+                ]
               }
             },
             "fieldValues": {
@@ -9497,6 +11025,17 @@
                   "endCursor": null,
                   "hasNextPage": false
                 }
+              },
+              "milestone": null,
+              "createdAt": "2026-10-15T11:38:29Z",
+              "closedAt": null,
+              "parent": null,
+              "subIssuesSummary": {
+                "total": 24,
+                "completed": 11
+              },
+              "closedByPullRequestsReferences": {
+                "nodes": []
               }
             },
             "fieldValues": {
@@ -9619,6 +11158,26 @@
                   "endCursor": null,
                   "hasNextPage": false
                 }
+              },
+              "milestone": null,
+              "createdAt": "2026-10-15T11:38:31Z",
+              "closedAt": "2026-10-15T14:50:35Z",
+              "parent": {
+                "number": 149,
+                "title": "Sample parent issue 149",
+                "url": "https://github.com/octo-user/repo-1/issues/149"
+              },
+              "subIssuesSummary": {
+                "total": 0,
+                "completed": 0
+              },
+              "closedByPullRequestsReferences": {
+                "nodes": [
+                  {
+                    "number": 166,
+                    "url": "https://github.com/octo-user/repo-1/pull/166"
+                  }
+                ]
               }
             },
             "fieldValues": {
@@ -9736,6 +11295,26 @@
                   "endCursor": null,
                   "hasNextPage": false
                 }
+              },
+              "milestone": null,
+              "createdAt": "2026-10-15T11:38:33Z",
+              "closedAt": "2026-10-15T14:27:27Z",
+              "parent": {
+                "number": 149,
+                "title": "Sample parent issue 149",
+                "url": "https://github.com/octo-user/repo-1/issues/149"
+              },
+              "subIssuesSummary": {
+                "total": 0,
+                "completed": 0
+              },
+              "closedByPullRequestsReferences": {
+                "nodes": [
+                  {
+                    "number": 165,
+                    "url": "https://github.com/octo-user/repo-1/pull/165"
+                  }
+                ]
               }
             },
             "fieldValues": {
@@ -9857,6 +11436,26 @@
                   "endCursor": null,
                   "hasNextPage": false
                 }
+              },
+              "milestone": null,
+              "createdAt": "2026-10-15T11:38:34Z",
+              "closedAt": "2026-10-16T20:09:27Z",
+              "parent": {
+                "number": 149,
+                "title": "Sample parent issue 149",
+                "url": "https://github.com/octo-user/repo-1/issues/149"
+              },
+              "subIssuesSummary": {
+                "total": 0,
+                "completed": 0
+              },
+              "closedByPullRequestsReferences": {
+                "nodes": [
+                  {
+                    "number": 198,
+                    "url": "https://github.com/octo-user/repo-1/pull/198"
+                  }
+                ]
               }
             },
             "fieldValues": {
@@ -9970,6 +11569,21 @@
                   "endCursor": null,
                   "hasNextPage": false
                 }
+              },
+              "milestone": null,
+              "createdAt": "2026-10-15T11:38:36Z",
+              "closedAt": null,
+              "parent": {
+                "number": 149,
+                "title": "Sample parent issue 149",
+                "url": "https://github.com/octo-user/repo-1/issues/149"
+              },
+              "subIssuesSummary": {
+                "total": 0,
+                "completed": 0
+              },
+              "closedByPullRequestsReferences": {
+                "nodes": []
               }
             },
             "fieldValues": {
@@ -10084,6 +11698,26 @@
                   "endCursor": null,
                   "hasNextPage": false
                 }
+              },
+              "milestone": null,
+              "createdAt": "2026-10-15T11:38:37Z",
+              "closedAt": "2026-10-20T12:03:42Z",
+              "parent": {
+                "number": 149,
+                "title": "Sample parent issue 149",
+                "url": "https://github.com/octo-user/repo-1/issues/149"
+              },
+              "subIssuesSummary": {
+                "total": 0,
+                "completed": 0
+              },
+              "closedByPullRequestsReferences": {
+                "nodes": [
+                  {
+                    "number": 260,
+                    "url": "https://github.com/octo-user/repo-1/pull/260"
+                  }
+                ]
               }
             },
             "fieldValues": {
@@ -10209,6 +11843,21 @@
                   "endCursor": null,
                   "hasNextPage": false
                 }
+              },
+              "milestone": null,
+              "createdAt": "2026-10-15T11:38:39Z",
+              "closedAt": null,
+              "parent": {
+                "number": 149,
+                "title": "Sample parent issue 149",
+                "url": "https://github.com/octo-user/repo-1/issues/149"
+              },
+              "subIssuesSummary": {
+                "total": 0,
+                "completed": 0
+              },
+              "closedByPullRequestsReferences": {
+                "nodes": []
               }
             },
             "fieldValues": {
@@ -10323,6 +11972,21 @@
                   "endCursor": null,
                   "hasNextPage": false
                 }
+              },
+              "milestone": null,
+              "createdAt": "2026-10-15T11:38:41Z",
+              "closedAt": null,
+              "parent": {
+                "number": 149,
+                "title": "Sample parent issue 149",
+                "url": "https://github.com/octo-user/repo-1/issues/149"
+              },
+              "subIssuesSummary": {
+                "total": 0,
+                "completed": 0
+              },
+              "closedByPullRequestsReferences": {
+                "nodes": []
               }
             },
             "fieldValues": {
@@ -10437,6 +12101,21 @@
                   "endCursor": null,
                   "hasNextPage": false
                 }
+              },
+              "milestone": null,
+              "createdAt": "2026-10-15T11:38:43Z",
+              "closedAt": null,
+              "parent": {
+                "number": 149,
+                "title": "Sample parent issue 149",
+                "url": "https://github.com/octo-user/repo-1/issues/149"
+              },
+              "subIssuesSummary": {
+                "total": 0,
+                "completed": 0
+              },
+              "closedByPullRequestsReferences": {
+                "nodes": []
               }
             },
             "fieldValues": {
@@ -10551,6 +12230,21 @@
                   "endCursor": null,
                   "hasNextPage": false
                 }
+              },
+              "milestone": null,
+              "createdAt": "2026-10-15T11:38:45Z",
+              "closedAt": null,
+              "parent": {
+                "number": 149,
+                "title": "Sample parent issue 149",
+                "url": "https://github.com/octo-user/repo-1/issues/149"
+              },
+              "subIssuesSummary": {
+                "total": 0,
+                "completed": 0
+              },
+              "closedByPullRequestsReferences": {
+                "nodes": []
               }
             },
             "fieldValues": {
@@ -10661,6 +12355,26 @@
                   "endCursor": null,
                   "hasNextPage": false
                 }
+              },
+              "milestone": null,
+              "createdAt": "2026-10-15T12:49:56Z",
+              "closedAt": "2026-10-16T20:58:54Z",
+              "parent": {
+                "number": 4,
+                "title": "Sample parent issue 4",
+                "url": "https://github.com/octo-user/repo-1/issues/4"
+              },
+              "subIssuesSummary": {
+                "total": 0,
+                "completed": 0
+              },
+              "closedByPullRequestsReferences": {
+                "nodes": [
+                  {
+                    "number": 199,
+                    "url": "https://github.com/octo-user/repo-1/pull/199"
+                  }
+                ]
               }
             },
             "fieldValues": {
@@ -10778,6 +12492,26 @@
                   "endCursor": null,
                   "hasNextPage": false
                 }
+              },
+              "milestone": null,
+              "createdAt": "2026-10-15T14:14:24Z",
+              "closedAt": "2026-10-18T12:17:32Z",
+              "parent": {
+                "number": 149,
+                "title": "Sample parent issue 149",
+                "url": "https://github.com/octo-user/repo-1/issues/149"
+              },
+              "subIssuesSummary": {
+                "total": 0,
+                "completed": 0
+              },
+              "closedByPullRequestsReferences": {
+                "nodes": [
+                  {
+                    "number": 258,
+                    "url": "https://github.com/octo-user/repo-1/pull/258"
+                  }
+                ]
               }
             },
             "fieldValues": {
@@ -10895,6 +12629,26 @@
                   "endCursor": null,
                   "hasNextPage": false
                 }
+              },
+              "milestone": null,
+              "createdAt": "2026-10-15T14:14:30Z",
+              "closedAt": "2026-10-18T12:44:29Z",
+              "parent": {
+                "number": 149,
+                "title": "Sample parent issue 149",
+                "url": "https://github.com/octo-user/repo-1/issues/149"
+              },
+              "subIssuesSummary": {
+                "total": 0,
+                "completed": 0
+              },
+              "closedByPullRequestsReferences": {
+                "nodes": [
+                  {
+                    "number": 242,
+                    "url": "https://github.com/octo-user/repo-1/pull/242"
+                  }
+                ]
               }
             },
             "fieldValues": {
@@ -11012,6 +12766,26 @@
                   "endCursor": null,
                   "hasNextPage": false
                 }
+              },
+              "milestone": null,
+              "createdAt": "2026-10-15T14:14:34Z",
+              "closedAt": "2026-10-16T21:26:00Z",
+              "parent": {
+                "number": 149,
+                "title": "Sample parent issue 149",
+                "url": "https://github.com/octo-user/repo-1/issues/149"
+              },
+              "subIssuesSummary": {
+                "total": 0,
+                "completed": 0
+              },
+              "closedByPullRequestsReferences": {
+                "nodes": [
+                  {
+                    "number": 209,
+                    "url": "https://github.com/octo-user/repo-1/pull/209"
+                  }
+                ]
               }
             },
             "fieldValues": {
@@ -11129,6 +12903,26 @@
                   "endCursor": null,
                   "hasNextPage": false
                 }
+              },
+              "milestone": null,
+              "createdAt": "2026-10-15T14:14:38Z",
+              "closedAt": "2026-10-20T08:06:31Z",
+              "parent": {
+                "number": 149,
+                "title": "Sample parent issue 149",
+                "url": "https://github.com/octo-user/repo-1/issues/149"
+              },
+              "subIssuesSummary": {
+                "total": 0,
+                "completed": 0
+              },
+              "closedByPullRequestsReferences": {
+                "nodes": [
+                  {
+                    "number": 261,
+                    "url": "https://github.com/octo-user/repo-1/pull/261"
+                  }
+                ]
               }
             },
             "fieldValues": {
@@ -11254,6 +13048,21 @@
                   "endCursor": null,
                   "hasNextPage": false
                 }
+              },
+              "milestone": null,
+              "createdAt": "2026-10-15T14:14:43Z",
+              "closedAt": "2026-10-20T15:04:49Z",
+              "parent": {
+                "number": 149,
+                "title": "Sample parent issue 149",
+                "url": "https://github.com/octo-user/repo-1/issues/149"
+              },
+              "subIssuesSummary": {
+                "total": 3,
+                "completed": 3
+              },
+              "closedByPullRequestsReferences": {
+                "nodes": []
               }
             },
             "fieldValues": {
@@ -11372,6 +13181,21 @@
                   "endCursor": null,
                   "hasNextPage": false
                 }
+              },
+              "milestone": null,
+              "createdAt": "2026-10-15T14:14:47Z",
+              "closedAt": null,
+              "parent": {
+                "number": 149,
+                "title": "Sample parent issue 149",
+                "url": "https://github.com/octo-user/repo-1/issues/149"
+              },
+              "subIssuesSummary": {
+                "total": 0,
+                "completed": 0
+              },
+              "closedByPullRequestsReferences": {
+                "nodes": []
               }
             },
             "fieldValues": {

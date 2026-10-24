@@ -804,3 +804,369 @@ input.search::placeholder {
   padding: 4px 8px;
   border: 1px solid var(--vscode-panel-border, var(--vscode-widget-border, var(--vscode-descriptionForeground)));
 }
+
+/* ---- table layout ---- */
+
+.table-wrap {
+  flex: 1;
+  overflow: auto;
+}
+
+#app.with-detail .table-wrap,
+#app.with-detail .roadmap {
+  padding-right: 440px;
+}
+
+.items-table {
+  width: max-content;
+  min-width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+.items-table th,
+.items-table td {
+  padding: 5px 10px;
+  text-align: left;
+  vertical-align: middle;
+  white-space: nowrap;
+  border-bottom: 1px solid var(--vscode-panel-border, var(--vscode-widget-border, transparent));
+}
+
+.items-table td {
+  max-width: 320px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.items-table thead th {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  padding: 0;
+  background: var(--vscode-editor-background);
+  font-weight: 600;
+}
+
+.th-button {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  width: 100%;
+  padding: 6px 10px;
+  font: inherit;
+  font-weight: 600;
+  color: var(--vscode-foreground);
+  text-align: left;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+}
+
+.th-button:hover {
+  background: var(--vscode-list-hoverBackground);
+}
+
+.sort-arrow {
+  color: var(--vscode-textLink-foreground);
+}
+
+.items-table .col-title {
+  position: sticky;
+  left: 0;
+  z-index: 1;
+  min-width: 280px;
+  max-width: 480px;
+  background: var(--vscode-editor-background);
+}
+
+.items-table thead .col-title {
+  z-index: 3;
+}
+
+.items-table td.kind-number {
+  text-align: right;
+}
+
+.item-row {
+  cursor: pointer;
+}
+
+.item-row:hover td {
+  background: var(--vscode-list-hoverBackground);
+}
+
+.item-row:focus-visible {
+  outline: 1px solid var(--vscode-focusBorder);
+  outline-offset: -1px;
+}
+
+.item-row.selected td {
+  background: var(--vscode-list-inactiveSelectionBackground);
+}
+
+.title-cell,
+.roadmap-title {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
+
+.row-title {
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.roadmap-title .row-title {
+  flex: 1;
+}
+
+.row-ref {
+  flex: none;
+  font-size: 0.9em;
+}
+
+.group-row th {
+  position: sticky;
+  left: 0;
+  padding-top: 12px;
+  font-weight: 600;
+  background: var(--vscode-editor-background);
+}
+
+.group-row th > * {
+  vertical-align: middle;
+  margin-right: 6px;
+}
+
+.group-row .dot {
+  display: inline-block;
+}
+
+.items-table .labels {
+  flex-wrap: nowrap;
+}
+
+.assignees .assignee-names {
+  margin-left: 6px;
+}
+
+.select-value,
+.sub-issues,
+.pr-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.pr-links {
+  display: inline-flex;
+  gap: 8px;
+}
+
+.pr-link .icon {
+  color: var(--vscode-descriptionForeground);
+}
+
+.progress {
+  display: inline-block;
+  width: 48px;
+  height: 6px;
+  overflow: hidden;
+  border-radius: 3px;
+  background: var(--vscode-progressBar-background, var(--vscode-focusBorder));
+  opacity: 0.35;
+}
+
+.progress-done {
+  display: block;
+  height: 100%;
+  background: var(--vscode-charts-green);
+}
+
+.table-note {
+  padding: 8px 16px;
+  margin: 0;
+}
+
+/* ---- roadmap layout ---- */
+
+.roadmap {
+  --title-width: 300px;
+  --row-height: 34px;
+  flex: 1;
+  position: relative;
+  overflow: auto;
+}
+
+.roadmap-head,
+.roadmap-row,
+.roadmap-group {
+  display: flex;
+  width: calc(var(--title-width) + var(--track-width));
+}
+
+.roadmap-head {
+  position: sticky;
+  top: 0;
+  z-index: 3;
+  background: var(--vscode-editor-background);
+  border-bottom: 1px solid var(--vscode-panel-border, var(--vscode-widget-border, transparent));
+}
+
+.roadmap-title {
+  position: sticky;
+  left: 0;
+  z-index: 2;
+  flex: none;
+  width: var(--title-width);
+  padding: 0 10px 0 16px;
+  background: var(--vscode-editor-background);
+  border-right: 1px solid var(--vscode-panel-border, var(--vscode-widget-border, transparent));
+}
+
+.roadmap-corner {
+  z-index: 4;
+  font-weight: 600;
+}
+
+.roadmap-scale {
+  flex: none;
+}
+
+.scale-row {
+  position: relative;
+  height: 24px;
+}
+
+.scale-cell {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  padding: 4px 6px;
+  overflow: clip;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  border-left: 1px solid var(--vscode-panel-border, var(--vscode-widget-border, transparent));
+}
+
+.scale-row.months .scale-cell {
+  font-weight: 600;
+}
+
+/* Labels stay visible while their month or iteration is partly scrolled out. */
+.scale-label {
+  position: sticky;
+  left: calc(var(--title-width) + 6px);
+}
+
+.scale-cell.iteration {
+  color: var(--vscode-descriptionForeground);
+  font-size: 0.9em;
+}
+
+.roadmap-body {
+  position: relative;
+}
+
+.roadmap-grid {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: var(--title-width);
+  pointer-events: none;
+}
+
+.month-line,
+.today-line {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+}
+
+.month-line {
+  background: var(--vscode-panel-border, var(--vscode-widget-border, transparent));
+}
+
+.today-line {
+  z-index: 1;
+  width: 2px;
+  background: var(--vscode-charts-orange);
+}
+
+.roadmap-row,
+.roadmap-group {
+  height: var(--row-height);
+  border-bottom: 1px solid var(--vscode-panel-border, var(--vscode-widget-border, transparent));
+}
+
+.roadmap-group .roadmap-title {
+  font-weight: 600;
+  padding-top: 8px;
+}
+
+.roadmap-row {
+  cursor: pointer;
+}
+
+.roadmap-row:hover .roadmap-title,
+.roadmap-row:hover .roadmap-track {
+  background: var(--vscode-list-hoverBackground);
+}
+
+.roadmap-row:focus-visible {
+  outline: 1px solid var(--vscode-focusBorder);
+  outline-offset: -1px;
+}
+
+.roadmap-row.selected .roadmap-title,
+.roadmap-row.selected .roadmap-track {
+  background: var(--vscode-list-inactiveSelectionBackground);
+}
+
+.roadmap-track {
+  position: relative;
+  flex: none;
+}
+
+.roadmap-bar {
+  position: absolute;
+  top: 6px;
+  bottom: 6px;
+  display: flex;
+  align-items: center;
+  min-width: 6px;
+  padding: 0 8px;
+  overflow: hidden;
+  border-radius: var(--radius);
+  border: 1px solid currentColor;
+  background: color-mix(in srgb, currentColor 22%, var(--vscode-editor-background));
+}
+
+.bar-label {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  color: var(--vscode-foreground);
+  font-size: 0.92em;
+}
+
+.bar-label.outside {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  max-width: 260px;
+  color: var(--vscode-descriptionForeground);
+}
+
+.no-dates {
+  margin-left: auto;
+  flex: none;
+  font-size: 0.85em;
+}

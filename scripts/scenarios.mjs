@@ -35,6 +35,16 @@ const moveCard = (title, to) => `(doc) => {
   return true;
 }`;
 
+/** Webview action: picks `option` in the toolbar select labelled `label`. */
+const pick = (label, option) => `(doc) => {
+  const select = doc.querySelector('.toolbar select[aria-label=${JSON.stringify(label)}]');
+  const o = select && [...select.options].find((x) => x.textContent === ${JSON.stringify(option)});
+  if (!o) return false;
+  select.value = o.value;
+  select.dispatchEvent(new Event('change', { bubbles: true }));
+  return true;
+}`;
+
 const webviewShown = "!!document.querySelector('.webview.ready, iframe.webview')";
 
 export const scenarios = {
@@ -64,6 +74,56 @@ export const scenarios = {
     ],
     waitFor: webviewShown,
     actions: [{ wait: 9000 }],
+  },
+  // Read-only: the sandbox's table view (fields chosen on github.com).
+  table: {
+    needsToken: true,
+    steps: [
+      { command: 'ghProjects.openBoard', args: [{ project: SANDBOX, viewId: 'PVTV_lAHOBCq4Uc4BoSUHzgMMTSw' }] },
+      { command: 'workbench.action.closeSidebar' },
+    ],
+    waitFor: webviewShown,
+    actions: [{ webview: "(doc) => doc.querySelectorAll('.item-row').length > 0" }, { wait: 3000 }],
+  },
+  // Read-only: the sandbox's roadmap view, bars from the Sprint iteration field.
+  roadmap: {
+    needsToken: true,
+    steps: [
+      { command: 'ghProjects.openBoard', args: [{ project: SANDBOX, viewId: 'PVTV_lAHOBCq4Uc4BoSUHzgMNwQM' }] },
+      { command: 'workbench.action.closeSidebar' },
+    ],
+    waitFor: webviewShown,
+    actions: [{ webview: "(doc) => doc.querySelectorAll('.roadmap-row').length > 0" }, { wait: 3000 }],
+  },
+  // Read-only: roadmap with bars from the Due date field, grouped by Status.
+  'roadmap-due': {
+    needsToken: true,
+    steps: [
+      { command: 'ghProjects.openBoard', args: [{ project: SANDBOX, viewId: 'PVTV_lAHOBCq4Uc4BoSUHzgMNwQM' }] },
+      { command: 'workbench.action.closeSidebar' },
+    ],
+    waitFor: webviewShown,
+    actions: [
+      { webview: "(doc) => doc.querySelectorAll('.roadmap-row').length > 0" },
+      { webview: pick('Start', 'Due') },
+      { webview: pick('Target', 'Due') },
+      { webview: pick('Group by', 'Status') },
+      { wait: 2000 },
+    ],
+  },
+  // Read-only: opens an item's detail from a table row.
+  'table-detail': {
+    needsToken: true,
+    steps: [
+      { command: 'ghProjects.openBoard', args: [{ project: SANDBOX, viewId: 'PVTV_lAHOBCq4Uc4BoSUHzgMMTSw' }] },
+      { command: 'workbench.action.closeSidebar' },
+    ],
+    waitFor: webviewShown,
+    actions: [
+      { webview: `(doc) => { const r = [...doc.querySelectorAll('.item-row')].find((x) => x.textContent.includes('M6:')); if (!r) return false; r.click(); return true; }` },
+      { webview: "(doc) => !!doc.querySelector('.detail-body') && !doc.querySelector('.detail-body')?.textContent?.startsWith('Loading')" },
+      { wait: 2000 },
+    ],
   },
   // Label + Status filter. The filter only lives in the throw-away harness profile.
   'board-filtered': {

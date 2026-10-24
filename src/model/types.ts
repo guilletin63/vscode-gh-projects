@@ -37,6 +37,17 @@ export interface ProjectView {
   filter: string;
   /** Field the board view uses as "Column by" (verticalGroupByFields), if exposed. */
   columnFieldId?: string;
+  /** Fields shown in the view, in the view's order (table columns). */
+  visibleFieldIds?: string[];
+  /** The view's sort, most significant first. */
+  sortBy?: ViewSort[];
+  /** Field the table or roadmap view is grouped by, if any. */
+  groupByFieldId?: string;
+}
+
+export interface ViewSort {
+  fieldId: string;
+  direction: 'asc' | 'desc';
 }
 
 /** A page of a cursor-paginated connection, already mapped. */
@@ -116,10 +127,19 @@ export interface ProjectItem {
   isDraftPullRequest?: boolean;
   /** owner/name */
   repository?: string;
+  milestone?: string;
+  /** Parent issue (issues only). */
+  parent?: { number: number; title: string; url?: string };
+  /** Sub-issues progress (issues with sub-issues only). */
+  subIssues?: { total: number; completed: number };
+  /** Pull requests that close the issue. */
+  linkedPullRequests?: { number: number; url: string }[];
   labels: Label[];
   assignees: User[];
   /** Custom field values keyed by field id. */
   fieldValues: Record<string, FieldValue>;
+  createdAt?: string;
+  closedAt?: string;
   updatedAt: string;
 }
 

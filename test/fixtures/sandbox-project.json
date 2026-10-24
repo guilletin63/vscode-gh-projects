@@ -3,7 +3,7 @@
     "node": {
       "id": "PVT_kwHOBCq4Uc4BoSUH",
       "number": 3,
-      "title": "Other project 2",
+      "title": "Other project 1",
       "url": "https://github.com/users/octo-user/projects/3",
       "shortDescription": "Sample project description",
       "owner": {
@@ -225,7 +225,7 @@
           {
             "id": "PVTV_lAHOBCq4Uc4BoSUHzgMMTSw",
             "number": 1,
-            "name": "View 1",
+            "name": "Table",
             "layout": "TABLE_LAYOUT",
             "filter": null,
             "verticalGroupByFields": {
@@ -234,11 +234,131 @@
                 "endCursor": null,
                 "hasNextPage": false
               }
+            },
+            "fields": {
+              "nodes": [
+                {
+                  "id": "PVTF_lAHOBCq4Uc4BoSUHzhmzHKA"
+                },
+                {
+                  "id": "PVTF_lAHOBCq4Uc4BoSUHzhmzHKE"
+                },
+                {
+                  "id": "PVTSSF_lAHOBCq4Uc4BoSUHzhmzHKI"
+                },
+                {
+                  "id": "PVTF_lAHOBCq4Uc4BoSUHzhmzHKM"
+                },
+                {
+                  "id": "PVTF_lAHOBCq4Uc4BoSUHzhmzHKQ"
+                },
+                {
+                  "id": "PVTSSF_lAHOBCq4Uc4BoSUHzhmzHOM"
+                },
+                {
+                  "id": "PVTF_lAHOBCq4Uc4BoSUHzhmzHOk"
+                },
+                {
+                  "id": "PVTF_lAHOBCq4Uc4BoSUHzhmzHPc"
+                },
+                {
+                  "id": "PVTIF_lAHOBCq4Uc4BoSUHzhmzHRw"
+                }
+              ]
+            },
+            "sortByFields": {
+              "nodes": []
+            },
+            "groupByFields": {
+              "nodes": []
+            }
+          },
+          {
+            "id": "PVTV_lAHOBCq4Uc4BoSUHzgMNwQI",
+            "number": 2,
+            "name": "Board",
+            "layout": "BOARD_LAYOUT",
+            "filter": null,
+            "verticalGroupByFields": {
+              "nodes": [
+                {
+                  "id": "PVTSSF_lAHOBCq4Uc4BoSUHzhmzHKI",
+                  "name": "Status"
+                }
+              ],
+              "pageInfo": {
+                "endCursor": "MQ",
+                "hasNextPage": false
+              }
+            },
+            "fields": {
+              "nodes": [
+                {
+                  "id": "PVTF_lAHOBCq4Uc4BoSUHzhmzHKA"
+                },
+                {
+                  "id": "PVTF_lAHOBCq4Uc4BoSUHzhmzHKE"
+                },
+                {
+                  "id": "PVTSSF_lAHOBCq4Uc4BoSUHzhmzHKI"
+                },
+                {
+                  "id": "PVTF_lAHOBCq4Uc4BoSUHzhmzHKQ"
+                },
+                {
+                  "id": "PVTF_lAHOBCq4Uc4BoSUHzhmzHKo"
+                }
+              ]
+            },
+            "sortByFields": {
+              "nodes": []
+            },
+            "groupByFields": {
+              "nodes": []
+            }
+          },
+          {
+            "id": "PVTV_lAHOBCq4Uc4BoSUHzgMNwQM",
+            "number": 3,
+            "name": "Roadmap",
+            "layout": "ROADMAP_LAYOUT",
+            "filter": null,
+            "verticalGroupByFields": {
+              "nodes": [],
+              "pageInfo": {
+                "endCursor": null,
+                "hasNextPage": false
+              }
+            },
+            "fields": {
+              "nodes": [
+                {
+                  "id": "PVTF_lAHOBCq4Uc4BoSUHzhmzHKA"
+                },
+                {
+                  "id": "PVTF_lAHOBCq4Uc4BoSUHzhmzHKE"
+                },
+                {
+                  "id": "PVTSSF_lAHOBCq4Uc4BoSUHzhmzHKI"
+                },
+                {
+                  "id": "PVTF_lAHOBCq4Uc4BoSUHzhmzHKQ"
+                },
+                {
+                  "id": "PVTF_lAHOBCq4Uc4BoSUHzhmzHKo"
+                }
+              ]
+            },
+            "sortByFields": {
+              "nodes": []
+            },
+            "groupByFields": {
+              "nodes": []
             }
           }
         ],
         "pageInfo": {
-          "endCursor": "MQ",
+          "endCursor": "Mw",
           "hasNextPage": false
         }
       }

@@ -5,11 +5,18 @@ import type { FieldInput } from '../model/edits';
 import { PendingEdits } from '../model/edits';
 import type { BoardFilter } from '../model/filter';
 import { applyFilter, buildFacets } from '../model/filter';
-import type { FieldValue, ItemDetail, ProjectField, ProjectItem } from '../model/types';
+import { dateFields, dayNumber, resolveDateSource } from '../model/roadmap';
+import type { DateSource } from '../model/roadmap';
+import { groupableFields } from '../model/table';
+import type { FieldValue, ItemDetail, ProjectField, ProjectItem, ProjectView, ViewSort } from '../model/types';
 import type { BoardState, HostMessage, WebviewMessage } from '../shared/protocol';
 import { h, icons } from './dom';
 import { detailPanel } from './detail';
 import { filterBar } from './filterBar';
+import { assigneeList, formatDate, itemRef, labelList, labelledIcon } from './itemParts';
+import type { Zoom } from './roadmapView';
+import { ZOOM_SCALE, roadmapView } from './roadmapView';
+import { tableView } from './tableView';
 
 interface VsCodeApi {
   postMessage(message: WebviewMessage): void;
@@ -46,6 +53,79 @@ function send(message: WebviewMessage): void {
 function updateSaved(patch: Record<string, unknown>): void {
   vscode.setState({ ...((vscode.getState() ?? {}) as object), ...patch });
 }
+
+/**
+ * Per-view choices made in the toolbar or table header, kept in the webview state only. An
+ * empty `groupFieldId` means "no grouping" even when the view has one on GitHub.
+ */
+interface ViewPrefs {
+  groupFieldId?: string;
+  sort?: ViewSort[];
+  startFieldId?: string;
+  endFieldId?: string;
+  zoom?: Zoom;
+}
+
+function allPrefs(): Record<string, ViewPrefs> {
+  return ((vscode.getState() as { viewPrefs?: Record<string, ViewPrefs> } | undefined)?.viewPrefs ?? {});
+}
+
+function prefsFor(viewId: string | undefined): ViewPrefs {
+  return viewId ? (allPrefs()[viewId] ?? {}) : {};
+}
+
+function setPrefs(viewId: string | undefined, patch: ViewPrefs): void {
+  if (!viewId) return;
+  updateSaved({ viewPrefs: { ...allPrefs(), [viewId]: { ...prefsFor(viewId), ...patch } } });
+  render();
+}
+
+function currentView(board: BoardState): ProjectView | undefined {
+  return board.project.views.find((v) => v.id === board.viewId);
+}
+
+function effectiveGroupField(board: BoardState, view: ProjectView | undefined): ProjectField | undefined {
+  const chosen = prefsFor(view?.id).groupFieldId;
+  const id = chosen !== undefined ? chosen : view?.groupByFieldId;
+  return id ? groupableFields(board.project.fields).find((f) => f.id === id) : undefined;
+}
+
+function effectiveSort(view: ProjectView | undefined): ViewSort[] | undefined {
+  return prefsFor(view?.id).sort ?? view?.sortBy;
+}
+
+function dateSource(board: BoardState, view: ProjectView | undefined): DateSource | undefined {
+  const prefs = prefsFor(view?.id);
+  return resolveDateSource(board.project.fields, {
+    ...(prefs.startFieldId ? { startFieldId: prefs.startFieldId } : {}),
+    ...(prefs.endFieldId ? { endFieldId: prefs.endFieldId } : {}),
+  });
+}
+
+/** Header click: ascending, then descending, then back to the view's own sort. */
+function toggleSort(view: ProjectView | undefined, fieldId: string): void {
+  const primary = effectiveSort(view)?.[0];
+  const prefs = prefsFor(view?.id);
+  let sort: ViewSort[] | undefined;
+  if (primary?.fieldId !== fieldId) sort = [{ fieldId, direction: 'asc' }];
+  else if (primary.direction === 'asc') sort = [{ fieldId, direction: 'desc' }];
+  else sort = prefs.sort ? undefined : [{ fieldId, direction: 'asc' }];
+  if (!view) return;
+  const next: ViewPrefs = { ...prefs };
+  if (sort) next.sort = sort;
+  else delete next.sort;
+  updateSaved({ viewPrefs: { ...allPrefs(), [view.id]: next } });
+  render();
+}
+
+/** Today's local calendar day. */
+function today(): number {
+  const d = new Date();
+  return dayNumber(`${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`);
+}
+
+/** The roadmap scrolls to today once per view and zoom level. */
+let roadmapScrolledFor: string | undefined;
 
 let bannerTimer: ReturnType<typeof setTimeout> | undefined;
 
@@ -85,7 +165,7 @@ function closeDetail(): void {
   const itemId = ui.detail?.itemId;
   ui.detail = undefined;
   render();
-  if (itemId) app.querySelector<HTMLElement>(`.card[data-item-id="${CSS.escape(itemId)}"]`)?.focus();
+  if (itemId) app.querySelector<HTMLElement>(`[data-item-id="${CSS.escape(itemId)}"][tabindex]`)?.focus();
 }
 
 /** Moves a card to a column by setting the grouping field; optimistic, rolled back on failure. */
@@ -165,6 +245,8 @@ function render(): void {
     if (cards && c.dataset.columnId) columnScroll.set(c.dataset.columnId, cards.scrollTop);
   });
   const detailScroll = app.querySelector('.detail')?.scrollTop ?? 0;
+  const scrolled = app.querySelector('.table-wrap, .roadmap');
+  const layoutScroll = scrolled ? { kind: scrolled.className, top: scrolled.scrollTop, left: scrolled.scrollLeft } : undefined;
   // Re-rendering replaces the DOM: keep keyboard focus and the caret where the user left them.
   const active = document.activeElement as HTMLInputElement | null;
   const focusKey = active?.getAttribute('data-focus-key');
@@ -182,6 +264,18 @@ function render(): void {
   });
   const detail = app.querySelector('.detail');
   if (detail) detail.scrollTop = detailScroll;
+  const layout = app.querySelector<HTMLElement>('.table-wrap, .roadmap');
+  if (layout && layoutScroll?.kind === layout.className) {
+    layout.scrollTop = layoutScroll.top;
+    layout.scrollLeft = layoutScroll.left;
+  }
+  if (layout?.classList.contains('roadmap') && ui.board) {
+    const key = `${ui.board.viewId}:${prefsFor(ui.board.viewId).zoom ?? 'month'}`;
+    if (roadmapScrolledFor !== key) {
+      roadmapScrolledFor = key;
+      layout.scrollLeft = Math.max(0, Number(layout.dataset.todayX ?? 0) - layout.clientWidth / 3);
+    }
+  }
   if (focusKey) {
     const el = [...app.querySelectorAll<HTMLInputElement>('[data-focus-key]')].find((e) => e.dataset.focusKey === focusKey);
     el?.focus();
@@ -255,7 +349,7 @@ function view(): Node[] {
       }),
     );
   }
-  nodes.push(boardView(board, visible));
+  nodes.push(layoutView(board, visible));
   const detailItem = ui.detail ? board.items.find((i) => i.id === ui.detail?.itemId) : undefined;
   if (ui.detail && detailItem) {
     const opened = ui.detail;
@@ -275,6 +369,42 @@ function view(): Node[] {
     );
   }
   return nodes;
+}
+
+function layoutView(board: BoardState, visible: ProjectItem[]): HTMLElement {
+  const view = currentView(board);
+  if (board.items.length === 0 || view?.layout === 'board' || !view) return boardView(board, visible);
+  const selectedId = ui.detail?.itemId;
+  if (view.layout === 'table') {
+    return tableView({
+      items: visible,
+      fields: board.project.fields,
+      view,
+      ...withValue('sort', effectiveSort(view)),
+      ...withValue('groupField', effectiveGroupField(board, view)),
+      ...withValue('selectedId', selectedId),
+      onSort: (fieldId) => toggleSort(view, fieldId),
+      onOpen: openDetail,
+      onOpenExternal: (url) => send({ type: 'openExternal', url }),
+    });
+  }
+  return roadmapView({
+    items: visible,
+    fields: board.project.fields,
+    view,
+    ...withValue('source', dateSource(board, view)),
+    ...withValue('sort', effectiveSort(view)),
+    ...withValue('groupField', effectiveGroupField(board, view)),
+    zoom: prefsFor(view.id).zoom ?? 'month',
+    today: today(),
+    ...withValue('selectedId', selectedId),
+    onOpen: openDetail,
+  });
+}
+
+/** Spreads `{ [key]: value }` only when value is set (exactOptionalPropertyTypes). */
+function withValue<K extends string, V>(key: K, value: V | undefined): { [P in K]?: V } {
+  return (value === undefined ? {} : { [key]: value }) as { [P in K]?: V };
 }
 
 function loadingText(): string | undefined {
@@ -317,21 +447,55 @@ function toolbar(): HTMLElement {
     render();
   });
 
-  const groupSelect = h('select', { 'aria-label': 'Column by' });
-  for (const f of project.fields.filter((f) => f.kind === 'singleSelect')) {
-    groupSelect.append(h('option', { value: f.id, selected: f.id === groupField?.id }, f.name));
+  const layout = board.items.length === 0 ? 'board' : (currentView?.layout ?? 'board');
+  const controls: HTMLElement[] = [];
+  if (layout === 'board') {
+    const groupSelect = h('select', { 'aria-label': 'Column by' });
+    for (const f of project.fields.filter((f) => f.kind === 'singleSelect')) {
+      groupSelect.append(h('option', { value: f.id, selected: f.id === groupField?.id }, f.name));
+    }
+    groupSelect.addEventListener('change', () => {
+      board.groupFieldId = groupSelect.value;
+      send({ type: 'selectGroupField', fieldId: groupSelect.value });
+      render();
+    });
+    controls.push(h('label', { class: 'field' }, h('span', {}, 'Column by'), groupSelect));
+  } else {
+    const grouped = effectiveGroupField(board, currentView);
+    const groupBy = select(
+      'Group by',
+      [{ value: '', label: 'None' }, ...groupableFields(project.fields).map((f) => ({ value: f.id, label: f.name }))],
+      grouped?.id ?? '',
+      (value) => setPrefs(currentView?.id, { groupFieldId: value }),
+    );
+    controls.push(groupBy);
   }
-  groupSelect.addEventListener('change', () => {
-    board.groupFieldId = groupSelect.value;
-    send({ type: 'selectGroupField', fieldId: groupSelect.value });
-    render();
-  });
+  if (layout === 'roadmap') {
+    const source = dateSource(board, currentView);
+    const options = dateFields(project.fields).map((f) => ({ value: f.id, label: f.name }));
+    if (source && options.length) {
+      controls.push(
+        select('Start', options, source.startFieldId, (value) => setPrefs(currentView?.id, { startFieldId: value })),
+        select('Target', options, source.endFieldId, (value) => setPrefs(currentView?.id, { endFieldId: value })),
+      );
+    }
+    const zooms: { value: Zoom; label: string }[] = [
+      { value: 'month', label: 'Month' },
+      { value: 'quarter', label: 'Quarter' },
+      { value: 'year', label: 'Year' },
+    ];
+    controls.push(
+      select('Zoom', zooms, prefsFor(currentView?.id).zoom ?? 'month', (value) => {
+        if (value in ZOOM_SCALE) setPrefs(currentView?.id, { zoom: value as Zoom });
+      }),
+    );
+  }
 
   const updated = h('span', { class: 'muted', title: board.loadedAt }, `Updated ${new Date(board.loadedAt).toLocaleTimeString()}`);
   bar.append(
     h('div', { class: 'title' }, title, meta),
     h('label', { class: 'field' }, h('span', {}, 'View'), viewSelect),
-    h('label', { class: 'field' }, h('span', {}, 'Column by'), groupSelect),
+    ...controls,
     h('span', { class: 'spacer' }),
     ui.loading ? h('span', { class: 'muted' }, loadingText() ?? '') : updated,
     button('Refresh', () => send({ type: 'refresh' }), { icon: icons.refresh(), class: 'icon-button', title: 'Refresh' }),
@@ -342,6 +506,13 @@ function toolbar(): HTMLElement {
     }),
   );
   return bar;
+}
+
+function select(label: string, options: { value: string; label: string }[], value: string, onChange: (value: string) => void): HTMLElement {
+  const el = h('select', { 'aria-label': label });
+  for (const o of options) el.append(h('option', { value: o.value, selected: o.value === value }, o.label));
+  el.addEventListener('change', () => onChange(el.value));
+  return h('label', { class: 'field' }, h('span', {}, label), el);
 }
 
 function boardView(board: BoardState, visible: ProjectItem[]): HTMLElement {
@@ -452,58 +623,15 @@ function moveMenu(item: ProjectItem, column: Column, ctx: CardContext): HTMLElem
   return details;
 }
 
-function itemIcon(item: ProjectItem): SVGElement {
-  switch (item.type) {
-    case 'PullRequest': {
-      const i = icons.pr();
-      i.classList.add(item.state === 'MERGED' ? 'state-merged' : item.state === 'CLOSED' ? 'state-closed' : item.isDraftPullRequest ? 'state-draft' : 'state-open');
-      return i;
-    }
-    case 'Issue': {
-      const closed = item.state === 'CLOSED';
-      const notPlanned = closed && item.stateReason === 'NOT_PLANNED';
-      const i = notPlanned ? icons.issueNotPlanned() : closed ? icons.issueClosed() : icons.issueOpen();
-      i.classList.add(notPlanned ? 'state-draft' : closed ? 'state-merged' : 'state-open');
-      return i;
-    }
-    default: {
-      const i = icons.draft();
-      i.classList.add('state-draft');
-      return i;
-    }
-  }
-}
-
-function itemKindLabel(item: ProjectItem): string {
-  if (item.type === 'DraftIssue') return 'Draft';
-  if (item.type === 'Redacted') return 'Private item';
-  const kind = item.type === 'PullRequest' ? (item.isDraftPullRequest ? 'Draft pull request' : 'Pull request') : 'Issue';
-  return `${kind}${item.state ? `, ${item.state.toLowerCase()}` : ''}`;
-}
-
 function cardView(item: ProjectItem, column: Column, ctx: CardContext): HTMLElement {
   const { fields } = ctx;
-  const ref = item.repository ? `${item.repository.split('/')[1] ?? item.repository}${item.number ? ` #${item.number}` : ''}` : item.type === 'DraftIssue' ? 'Draft' : '';
-  const icon = itemIcon(item);
-  icon.setAttribute('role', 'img');
-  icon.setAttribute('aria-label', itemKindLabel(item));
-  const meta = h('div', { class: 'card-meta' }, icon, h('span', { class: 'card-ref', title: item.repository ?? '' }, ref));
+  const meta = h('div', { class: 'card-meta' }, labelledIcon(item), h('span', { class: 'card-ref', title: item.repository ?? '' }, itemRef(item)));
   if (item.url) {
     const url = item.url;
     meta.append(button('Open on GitHub', () => send({ type: 'openExternal', url }), { icon: icons.external(), class: 'icon-button small', title: 'Open on GitHub' }));
   }
 
-  const labels = item.labels.length
-    ? h(
-        'ul',
-        { class: 'labels', 'aria-label': 'Labels' },
-        item.labels.map((l) => {
-          const chip = h('li', { class: 'label' }, h('span', { class: 'label-dot', 'aria-hidden': 'true' }), l.name);
-          if (/^[0-9a-f]{6}$/i.test(l.color)) chip.style.setProperty('--label-color', `#${l.color}`);
-          return chip;
-        }),
-      )
-    : null;
+  const labels = labelList(item);
 
   const values = fields
     .map((f) => [f, item.fieldValues[f.id]] as const)
@@ -512,18 +640,7 @@ function cardView(item: ProjectItem, column: Column, ctx: CardContext): HTMLElem
     ? h('ul', { class: 'fields', 'aria-label': 'Fields' }, values.map(([f, v]) => fieldChip(f, v)))
     : null;
 
-  const assignees = item.assignees.length
-    ? h(
-        'div',
-        { class: 'assignees', 'aria-label': `Assignees: ${item.assignees.map((a) => a.login).join(', ')}` },
-        item.assignees.slice(0, 4).map((a) =>
-          a.avatarUrl
-            ? h('img', { class: 'avatar', src: a.avatarUrl, alt: a.login, title: a.login, width: 20, height: 20 })
-            : h('span', { class: 'avatar initials', title: a.login }, a.login.slice(0, 2).toUpperCase()),
-        ),
-        item.assignees.length > 4 ? h('span', { class: 'muted' }, `+${item.assignees.length - 4}`) : null,
-      )
-    : null;
+  const assignees = assigneeList(item);
 
   if (ctx.movable) meta.append(moveMenu(item, column, ctx));
   const card = h(
@@ -590,7 +707,7 @@ function fieldChip(field: ProjectField, value: FieldValue): HTMLElement {
       text = String(value.number);
       break;
     case 'date':
-      text = new Date(`${value.date}T00:00:00`).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
+      text = formatDate(value.date);
       break;
     case 'text':
       text = value.text.length > 40 ? `${value.text.slice(0, 39)}…` : value.text;

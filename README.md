@@ -1,7 +1,7 @@
 # GitHub Projects in VS Code
 
-Work with **GitHub Projects (v2)** boards without leaving the editor: the same board you see at
-`github.com/users/<owner>/projects/<n>`, with columns by Status and cards you can move.
+Work with **GitHub Projects (v2)** without leaving the editor: the same board, table and roadmap
+views you see at `github.com/users/<owner>/projects/<n>`, with cards you can move.
 
 ![Board](docs/screenshots/board.png)
 
@@ -13,6 +13,11 @@ Work with **GitHub Projects (v2)** boards without leaving the editor: the same b
   field). Cards show number, title, repository, labels, assignees and custom fields
   (single-select, iteration, number, date, text). Works with projects of any size: items are
   loaded 100 at a time.
+- **Table views** with the fields the view shows on GitHub, in the same order, plus its sort and
+  group-by. Click a column header to sort, pick a field to group by.
+- **Roadmap views**: items as bars on a timeline with month headers, iterations and a line for
+  today. Bars use an iteration field or date fields (start and target), colored by Status, with
+  Month / Quarter / Year zoom.
 - **Move cards** by drag & drop, with the **Move** menu or with <kbd>Alt</kbd>+<kbd>←</kbd>/<kbd>→</kbd>.
   The card moves at once; if GitHub rejects the change it goes back and you get a warning.
 - **Filters and search**: text search (`#123`, repository, labels…) plus label, assignee and any
@@ -60,7 +65,21 @@ organization that doesn't show up on its own.
 
 ![Open a board](docs/media/open-board.gif)
 
-### 3. Move cards
+### 3. Table and roadmap views
+
+Each view opens with its own layout: boards as columns, tables as rows with the view's fields,
+and roadmaps as a timeline. Switch views with the **View** menu in the panel or from the tree.
+
+![Table view](docs/screenshots/table.png)
+
+GitHub doesn't share which date fields a roadmap view uses, so pick them with **Start** and
+**Target** (an iteration field, a date field or one of each). The first time, the extension uses
+the project's iteration field, or date fields named like *Start* and *Target* / *Due*. Items
+without dates are listed at the end. Click a row or a bar to open its details.
+
+![Roadmap view](docs/screenshots/roadmap.png)
+
+### 4. Move cards
 
 Drag a card to another column. It moves immediately and GitHub is updated in the background; if
 the update fails, the card goes back and you get a warning. Without a mouse: focus a card and use
@@ -69,7 +88,7 @@ the **Move** menu or <kbd>Alt</kbd>+<kbd>←</kbd>/<kbd>→</kbd>. The status ba
 
 ![Move a card](docs/media/move-card.gif)
 
-### 4. Filter and search
+### 5. Filter and search
 
 Type in the search box (`#123`, words from titles, repository, labels…) or pick values in the
 **Label**, **Assignee** and field menus. Values inside a menu are combined with OR, menus with
@@ -77,9 +96,9 @@ AND. Filters are remembered per project.
 
 ![Filters](docs/media/filters.gif)
 
-### 5. Item details
+### 6. Item details
 
-Click a card to read its description and edit its project fields. **Open on GitHub** and
+Click a card (or a table row, or a roadmap bar) to read its description and edit its project fields. **Open on GitHub** and
 **Copy link** are one click away.
 
 ![Item details](docs/media/item-detail.gif)
@@ -114,7 +133,11 @@ Click a card to read its description and edit its project fields. **Open on GitH
 
 ## Known limitations
 
-- The view's own GitHub filter (`is:open label:bug …`) is not applied; use the board's filters.
+- The view's own GitHub filter (`is:open label:bug …`) is not applied; use the panel's filters.
+- Tables don't show the Reviewers and Tracks / Tracked by fields; the table says which fields it
+  leaves out. Table cells are read-only: edit fields from the item details.
+- A roadmap's date fields, zoom and markers set on github.com aren't available through GitHub's
+  API; choose the dates in the panel (remembered per view).
 - Moving a card changes its column only; the order inside a column follows the project.
 - Organizations whose membership is private may not be listed automatically; add them with
   **Add Owner…**.

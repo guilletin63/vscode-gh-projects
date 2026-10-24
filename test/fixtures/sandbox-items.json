@@ -12,7 +12,7 @@
             "id": "PVTI_lAHOBCq4Uc4BoSUHzhCzoiY",
             "type": "ISSUE",
             "isArchived": false,
-            "updatedAt": "2026-10-22T20:41:53Z",
+            "updatedAt": "2026-10-24T03:54:17Z",
             "content": {
               "__typename": "Issue",
               "id": "I_kwDOVT4Nhs8AAAABZMEKoA",
@@ -42,11 +42,27 @@
                   "endCursor": null,
                   "hasNextPage": false
                 }
+              },
+              "milestone": null,
+              "createdAt": "2026-10-22T18:39:12Z",
+              "closedAt": "2026-10-22T20:41:51Z",
+              "parent": null,
+              "subIssuesSummary": {
+                "total": 0,
+                "completed": 0
+              },
+              "closedByPullRequestsReferences": {
+                "nodes": [
+                  {
+                    "number": 8,
+                    "url": "https://github.com/octo-user/repo-2/pull/8"
+                  }
+                ]
               }
             },
             "fieldValues": {
               "pageInfo": {
-                "endCursor": "Ng",
+                "endCursor": "Nw",
                 "hasNextPage": false
               },
               "nodes": [
@@ -83,6 +99,13 @@
                   "field": {
                     "id": "PVTIF_lAHOBCq4Uc4BoSUHzhmzHRw"
                   }
+                },
+                {
+                  "__typename": "ProjectV2ItemFieldDateValue",
+                  "date": "2026-10-16",
+                  "field": {
+                    "id": "PVTF_lAHOBCq4Uc4BoSUHzhmzHPc"
+                  }
                 }
               ]
             }
@@ -91,7 +114,7 @@
             "id": "PVTI_lAHOBCq4Uc4BoSUHzhCzojw",
             "type": "ISSUE",
             "isArchived": false,
-            "updatedAt": "2026-10-23T07:17:34Z",
+            "updatedAt": "2026-10-24T03:54:18Z",
             "content": {
               "__typename": "Issue",
               "id": "I_kwDOVT4Nhs8AAAABZMEL-Q",
@@ -121,11 +144,27 @@
                   "endCursor": null,
                   "hasNextPage": false
                 }
+              },
+              "milestone": null,
+              "createdAt": "2026-10-22T18:39:13Z",
+              "closedAt": "2026-10-22T20:41:55Z",
+              "parent": null,
+              "subIssuesSummary": {
+                "total": 0,
+                "completed": 0
+              },
+              "closedByPullRequestsReferences": {
+                "nodes": [
+                  {
+                    "number": 9,
+                    "url": "https://github.com/octo-user/repo-2/pull/9"
+                  }
+                ]
               }
             },
             "fieldValues": {
               "pageInfo": {
-                "endCursor": "Ng",
+                "endCursor": "Nw",
                 "hasNextPage": false
               },
               "nodes": [
@@ -147,8 +186,8 @@
                 },
                 {
                   "__typename": "ProjectV2ItemFieldSingleSelectValue",
-                  "optionId": "47fc9ee4",
-                  "name": "In Progress",
+                  "optionId": "98236657",
+                  "name": "Done",
                   "field": {
                     "id": "PVTSSF_lAHOBCq4Uc4BoSUHzhmzHKI"
                   }
@@ -162,6 +201,13 @@
                   "field": {
                     "id": "PVTIF_lAHOBCq4Uc4BoSUHzhmzHRw"
                   }
+                },
+                {
+                  "__typename": "ProjectV2ItemFieldDateValue",
+                  "date": "2026-10-19",
+                  "field": {
+                    "id": "PVTF_lAHOBCq4Uc4BoSUHzhmzHPc"
+                  }
                 }
               ]
             }
@@ -170,7 +216,7 @@
             "id": "PVTI_lAHOBCq4Uc4BoSUHzhCzolk",
             "type": "ISSUE",
             "isArchived": false,
-            "updatedAt": "2026-10-23T07:16:38Z",
+            "updatedAt": "2026-10-24T03:54:19Z",
             "content": {
               "__typename": "Issue",
               "id": "I_kwDOVT4Nhs8AAAABZMEN3A",
@@ -200,11 +246,27 @@
                   "endCursor": null,
                   "hasNextPage": false
                 }
+              },
+              "milestone": null,
+              "createdAt": "2026-10-22T18:39:15Z",
+              "closedAt": "2026-10-22T20:41:56Z",
+              "parent": null,
+              "subIssuesSummary": {
+                "total": 0,
+                "completed": 0
+              },
+              "closedByPullRequestsReferences": {
+                "nodes": [
+                  {
+                    "number": 10,
+                    "url": "https://github.com/octo-user/repo-2/pull/10"
+                  }
+                ]
               }
             },
             "fieldValues": {
               "pageInfo": {
-                "endCursor": "Ng",
+                "endCursor": "Nw",
                 "hasNextPage": false
               },
               "nodes": [
@@ -226,8 +288,8 @@
                 },
                 {
                   "__typename": "ProjectV2ItemFieldSingleSelectValue",
-                  "optionId": "47fc9ee4",
-                  "name": "In Progress",
+                  "optionId": "98236657",
+                  "name": "Done",
                   "field": {
                     "id": "PVTSSF_lAHOBCq4Uc4BoSUHzhmzHKI"
                   }
@@ -241,6 +303,13 @@
                   "field": {
                     "id": "PVTIF_lAHOBCq4Uc4BoSUHzhmzHRw"
                   }
+                },
+                {
+                  "__typename": "ProjectV2ItemFieldDateValue",
+                  "date": "2026-10-21",
+                  "field": {
+                    "id": "PVTF_lAHOBCq4Uc4BoSUHzhmzHPc"
+                  }
                 }
               ]
             }
@@ -249,7 +318,7 @@
             "id": "PVTI_lAHOBCq4Uc4BoSUHzhCzooA",
             "type": "ISSUE",
             "isArchived": false,
-            "updatedAt": "2026-10-23T07:16:44Z",
+            "updatedAt": "2026-10-24T03:54:20Z",
             "content": {
               "__typename": "Issue",
               "id": "I_kwDOVT4Nhs8AAAABZMEPhw",
@@ -279,11 +348,27 @@
                   "endCursor": null,
                   "hasNextPage": false
                 }
+              },
+              "milestone": null,
+              "createdAt": "2026-10-22T18:39:17Z",
+              "closedAt": "2026-10-22T20:41:59Z",
+              "parent": null,
+              "subIssuesSummary": {
+                "total": 0,
+                "completed": 0
+              },
+              "closedByPullRequestsReferences": {
+                "nodes": [
+                  {
+                    "number": 11,
+                    "url": "https://github.com/octo-user/repo-2/pull/11"
+                  }
+                ]
               }
             },
             "fieldValues": {
               "pageInfo": {
-                "endCursor": "Ng",
+                "endCursor": "Nw",
                 "hasNextPage": false
               },
               "nodes": [
@@ -305,8 +390,8 @@
                 },
                 {
                   "__typename": "ProjectV2ItemFieldSingleSelectValue",
-                  "optionId": "47fc9ee4",
-                  "name": "In Progress",
+                  "optionId": "98236657",
+                  "name": "Done",
                   "field": {
                     "id": "PVTSSF_lAHOBCq4Uc4BoSUHzhmzHKI"
                   }
@@ -320,6 +405,13 @@
                   "field": {
                     "id": "PVTIF_lAHOBCq4Uc4BoSUHzhmzHRw"
                   }
+                },
+                {
+                  "__typename": "ProjectV2ItemFieldDateValue",
+                  "date": "2026-10-23",
+                  "field": {
+                    "id": "PVTF_lAHOBCq4Uc4BoSUHzhmzHPc"
+                  }
                 }
               ]
             }
@@ -328,7 +420,7 @@
             "id": "PVTI_lAHOBCq4Uc4BoSUHzhCzop4",
             "type": "ISSUE",
             "isArchived": false,
-            "updatedAt": "2026-10-23T07:39:57Z",
+            "updatedAt": "2026-10-24T03:54:21Z",
             "content": {
               "__typename": "Issue",
               "id": "I_kwDOVT4Nhs8AAAABZMERRw",
@@ -358,11 +450,27 @@
                   "endCursor": null,
                   "hasNextPage": false
                 }
+              },
+              "milestone": null,
+              "createdAt": "2026-10-22T18:39:19Z",
+              "closedAt": "2026-10-23T07:39:56Z",
+              "parent": null,
+              "subIssuesSummary": {
+                "total": 0,
+                "completed": 0
+              },
+              "closedByPullRequestsReferences": {
+                "nodes": [
+                  {
+                    "number": 12,
+                    "url": "https://github.com/octo-user/repo-2/pull/12"
+                  }
+                ]
               }
             },
             "fieldValues": {
               "pageInfo": {
-                "endCursor": "OQ",
+                "endCursor": "MTA",
                 "hasNextPage": false
               },
               "nodes": [
@@ -422,6 +530,13 @@
                   "field": {
                     "id": "PVTF_lAHOBCq4Uc4BoSUHzhmzHOk"
                   }
+                },
+                {
+                  "__typename": "ProjectV2ItemFieldDateValue",
+                  "date": "2026-10-28",
+                  "field": {
+                    "id": "PVTF_lAHOBCq4Uc4BoSUHzhmzHPc"
+                  }
                 }
               ]
             }
@@ -430,7 +545,7 @@
             "id": "PVTI_lAHOBCq4Uc4BoSUHzhCzotI",
             "type": "ISSUE",
             "isArchived": false,
-            "updatedAt": "2026-10-23T07:44:30Z",
+            "updatedAt": "2026-10-24T03:54:22Z",
             "content": {
               "__typename": "Issue",
               "id": "I_kwDOVT4Nhs8AAAABZMESvw",
@@ -460,11 +575,27 @@
                   "endCursor": null,
                   "hasNextPage": false
                 }
+              },
+              "milestone": null,
+              "createdAt": "2026-10-22T18:39:20Z",
+              "closedAt": "2026-10-23T07:44:29Z",
+              "parent": null,
+              "subIssuesSummary": {
+                "total": 0,
+                "completed": 0
+              },
+              "closedByPullRequestsReferences": {
+                "nodes": [
+                  {
+                    "number": 13,
+                    "url": "https://github.com/octo-user/repo-2/pull/13"
+                  }
+                ]
               }
             },
             "fieldValues": {
               "pageInfo": {
-                "endCursor": "OQ",
+                "endCursor": "MTA",
                 "hasNextPage": false
               },
               "nodes": [
@@ -524,6 +655,13 @@
                   "field": {
                     "id": "PVTF_lAHOBCq4Uc4BoSUHzhmzHOk"
                   }
+                },
+                {
+                  "__typename": "ProjectV2ItemFieldDateValue",
+                  "date": "2026-11-02",
+                  "field": {
+                    "id": "PVTF_lAHOBCq4Uc4BoSUHzhmzHPc"
+                  }
                 }
               ]
             }
@@ -532,7 +670,7 @@
             "id": "PVTI_lAHOBCq4Uc4BoSUHzhCzowo",
             "type": "ISSUE",
             "isArchived": false,
-            "updatedAt": "2026-10-23T07:49:14Z",
+            "updatedAt": "2026-10-24T03:54:23Z",
             "content": {
               "__typename": "Issue",
               "id": "I_kwDOVT4Nhs8AAAABZMEo_A",
@@ -562,11 +700,27 @@
                   "endCursor": null,
                   "hasNextPage": false
                 }
+              },
+              "milestone": null,
+              "createdAt": "2026-10-22T18:39:43Z",
+              "closedAt": "2026-10-23T07:49:11Z",
+              "parent": null,
+              "subIssuesSummary": {
+                "total": 0,
+                "completed": 0
+              },
+              "closedByPullRequestsReferences": {
+                "nodes": [
+                  {
+                    "number": 14,
+                    "url": "https://github.com/octo-user/repo-2/pull/14"
+                  }
+                ]
               }
             },
             "fieldValues": {
               "pageInfo": {
-                "endCursor": "OQ",
+                "endCursor": "MTA",
                 "hasNextPage": false
               },
               "nodes": [
@@ -626,6 +780,13 @@
                   "field": {
                     "id": "PVTF_lAHOBCq4Uc4BoSUHzhmzHOk"
                   }
+                },
+                {
+                  "__typename": "ProjectV2ItemFieldDateValue",
+                  "date": "2026-11-06",
+                  "field": {
+                    "id": "PVTF_lAHOBCq4Uc4BoSUHzhmzHPc"
+                  }
                 }
               ]
             }
@@ -659,7 +820,10 @@
                   "endCursor": null,
                   "hasNextPage": false
                 }
-              }
+              },
+              "milestone": null,
+              "createdAt": "2026-10-22T18:44:59Z",
+              "closedAt": "2026-10-23T07:15:23Z"
             },
             "fieldValues": {
               "pageInfo": {
@@ -707,6 +871,7 @@
               "__typename": "DraftIssue",
               "id": "DI_lAHOBCq4Uc4BoSUHzgLdhnY",
               "title": "Sample DraftIssue 167",
+              "createdAt": "2026-10-22T19:13:50Z",
               "assignees": {
                 "nodes": [],
                 "pageInfo": {
@@ -748,6 +913,7 @@
               "__typename": "DraftIssue",
               "id": "DI_lAHOBCq4Uc4BoSUHzgLdhnc",
               "title": "Sample DraftIssue 169",
+              "createdAt": "2026-10-22T19:13:52Z",
               "assignees": {
                 "nodes": [],
                 "pageInfo": {
@@ -789,6 +955,7 @@
               "__typename": "DraftIssue",
               "id": "DI_lAHOBCq4Uc4BoSUHzgLdhno",
               "title": "Sample DraftIssue 171",
+              "createdAt": "2026-10-22T19:13:54Z",
               "assignees": {
                 "nodes": [],
                 "pageInfo": {
@@ -830,6 +997,7 @@
               "__typename": "DraftIssue",
               "id": "DI_lAHOBCq4Uc4BoSUHzgLdhos",
               "title": "Sample DraftIssue 173",
+              "createdAt": "2026-10-22T19:14:13Z",
               "assignees": {
                 "nodes": [
                   {
@@ -892,11 +1060,12 @@
             "id": "PVTI_lAHOBCq4Uc4BoSUHzhCz7GQ",
             "type": "DRAFT_ISSUE",
             "isArchived": false,
-            "updatedAt": "2026-10-22T20:42:24Z",
+            "updatedAt": "2026-10-24T03:54:24Z",
             "content": {
               "__typename": "DraftIssue",
               "id": "DI_lAHOBCq4Uc4BoSUHzgLdiaM",
               "title": "Sample DraftIssue 175",
+              "createdAt": "2026-10-22T19:33:00Z",
               "assignees": {
                 "nodes": [
                   {
@@ -912,7 +1081,7 @@
             },
             "fieldValues": {
               "pageInfo": {
-                "endCursor": "NQ",
+                "endCursor": "Ng",
                 "hasNextPage": false
               },
               "nodes": [
@@ -950,6 +1119,13 @@
                   "name": "XS",
                   "field": {
                     "id": "PVTSSF_lAHOBCq4Uc4BoSUHzhmzHOg"
+                  }
+                },
+                {
+                  "__typename": "ProjectV2ItemFieldDateValue",
+                  "date": "2026-11-12",
+                  "field": {
+                    "id": "PVTF_lAHOBCq4Uc4BoSUHzhmzHPc"
                   }
                 }
               ]

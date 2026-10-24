@@ -125,7 +125,11 @@ function scrubString(s) {
   let out = s;
   for (const [real, fake] of repos) out = out.replace(new RegExp(escapeRe(real), 'gi'), fake);
   for (const [real, fake] of logins) out = out.replace(new RegExp(escapeRe(real), 'gi'), fake);
-  return out;
+  // Links to repositories seen only in URLs (parent issues, linked pull requests) keep no name.
+  const fakeRepos = new Set(repos.values());
+  return out.replace(/github\.com\/([\w.-]+)\/([\w.-]+)/g, (m, owner, name) =>
+    owner === 'users' || owner === 'orgs' || fakeRepos.has(`${owner}/${name}`) ? m : 'github.com/octo-user/other-repo',
+  );
 }
 
 function escapeRe(s) {
@@ -146,6 +150,8 @@ function anonymise(v, parent, fieldId) {
     if (isContent && k === 'title') out[k] = `Sample ${v.__typename} ${v.number ?? ++seq}`;
     else if (isContent && (k === 'body' || k === 'bodyText')) out[k] = LOREM;
     else if (isContent && k === 'bodyHTML') out[k] = `<p>${LOREM}</p>`;
+    else if (k === 'milestone' && val) out[k] = { title: 'Sample milestone' };
+    else if (k === 'parent' && val) out[k] = { ...anonymise(val, k, fieldId), title: `Sample parent issue ${val.number}` };
     else if (v.__typename === 'ProjectV2ItemFieldTextValue' && k === 'text') out[k] = `Sample text ${++seq}`;
     else if (v.__typename === 'ProjectV2ItemFieldSingleSelectValue' && k === 'name' && valueFieldId) {
       out[k] = optionNames.get(`${valueFieldId}:${v.optionId}`) ?? `Option ?`;

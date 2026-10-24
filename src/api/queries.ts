@@ -56,21 +56,28 @@ export const PROJECTS_QUERY = /* GraphQL */ `
   }
 `;
 
+const VIEW_FIELDS = /* GraphQL */ `
+  id
+  number
+  name
+  layout
+  filter
+  verticalGroupByFields(first: 1) {
+    nodes { ... on ProjectV2FieldCommon { id name } }
+    pageInfo { endCursor hasNextPage }
+  }
+  fields(first: 50) { nodes { ... on ProjectV2FieldCommon { id } } }
+  sortByFields(first: 5) { nodes { direction field { ... on ProjectV2FieldCommon { id } } } }
+  groupByFields(first: 1) { nodes { ... on ProjectV2FieldCommon { id } } }
+`;
+
 export const VIEWS_QUERY = /* GraphQL */ `
   query Views($projectId: ID!, $cursor: String) {
     node(id: $projectId) {
       ... on ProjectV2 {
         views(first: 100, after: $cursor) {
           nodes {
-            id
-            number
-            name
-            layout
-            filter
-            verticalGroupByFields(first: 1) {
-              nodes { ... on ProjectV2FieldCommon { id name } }
-              pageInfo { endCursor hasNextPage }
-            }
+            ${VIEW_FIELDS}
           }
           pageInfo { endCursor hasNextPage }
         }
@@ -108,15 +115,7 @@ export const PROJECT_DETAILS_QUERY = /* GraphQL */ `
         }
         views(first: 100) {
           nodes {
-            id
-            number
-            name
-            layout
-            filter
-            verticalGroupByFields(first: 1) {
-              nodes { ... on ProjectV2FieldCommon { id name } }
-              pageInfo { endCursor hasNextPage }
-            }
+            ${VIEW_FIELDS}
           }
           pageInfo { endCursor hasNextPage }
         }
@@ -128,6 +127,9 @@ export const PROJECT_DETAILS_QUERY = /* GraphQL */ `
 const ITEM_CONTENT_FIELDS = /* GraphQL */ `
   labels(first: 20) { nodes { name color } pageInfo { endCursor hasNextPage } }
   assignees(first: 10) { nodes { login avatarUrl(size: 48) } pageInfo { endCursor hasNextPage } }
+  milestone { title }
+  createdAt
+  closedAt
 `;
 
 export const PROJECT_ITEMS_QUERY = /* GraphQL */ `
@@ -148,6 +150,9 @@ export const PROJECT_ITEMS_QUERY = /* GraphQL */ `
                 id number title url state stateReason
                 repository { nameWithOwner }
                 ${ITEM_CONTENT_FIELDS}
+                parent { number title url }
+                subIssuesSummary { total completed }
+                closedByPullRequestsReferences(first: 5, includeClosedPrs: true) { nodes { number url } }
               }
               ... on PullRequest {
                 id number title url state isDraft
@@ -155,7 +160,7 @@ export const PROJECT_ITEMS_QUERY = /* GraphQL */ `
                 ${ITEM_CONTENT_FIELDS}
               }
               ... on DraftIssue {
-                id title
+                id title createdAt
                 assignees(first: 10) { nodes { login avatarUrl(size: 48) } pageInfo { endCursor hasNextPage } }
               }
             }

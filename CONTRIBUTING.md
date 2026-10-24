@@ -43,12 +43,15 @@ src/
   model/              Pure types and logic, no vscode / no GraphQL imports
     types.ts            Owner, ProjectSummary, ProjectView, Field, Item, ...
     board.ts            group-by field resolution + columns
+    table.ts            table columns from the view's fields, sort and group-by
+    roadmap.ts          roadmap date sources, item spans and the timeline scale
     filter.ts           text / label / assignee / field filters
     edits.ts            field inputs, optimistic edits and rollback
     stats.ts            status bar counter
   shared/protocol.ts  Typed postMessage protocol, imported by BOTH extension and webview
   views/              VS Code UI (tree, webview host, status bar, poller)
-  webview/            Browser-side code of the board (vanilla TS + CSS, bundled by esbuild)
+  webview/            Browser-side code of the panel (vanilla TS + CSS, bundled by esbuild):
+                      main.ts (board, toolbar, state), tableView.ts, roadmapView.ts, detail.ts
 test/
   unit/               vitest
   fixtures/           recorded GraphQL responses (anonymised)

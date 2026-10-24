@@ -16,6 +16,7 @@ import type {
   ProjectView,
   SelectOption,
   ViewLayout,
+  ViewSort,
 } from '../model/types';
 import type {
   RawConnection,
@@ -100,6 +101,11 @@ const LAYOUTS: Record<RawView['layout'], ViewLayout> = {
 
 export function mapView(raw: RawView): ProjectView {
   const columnField = compact(raw.verticalGroupByFields?.nodes).find((f) => f.id);
+  const groupField = compact(raw.groupByFields?.nodes).find((f) => f.id);
+  const visibleFieldIds = compact(raw.fields?.nodes).flatMap((f) => (f.id ? [f.id] : []));
+  const sortBy: ViewSort[] = compact(raw.sortByFields?.nodes).flatMap((s) =>
+    s.field?.id ? [{ fieldId: s.field.id, direction: s.direction === 'DESC' ? 'desc' : 'asc' }] : [],
+  );
   return {
     id: raw.id,
     number: raw.number,
@@ -107,6 +113,9 @@ export function mapView(raw: RawView): ProjectView {
     layout: LAYOUTS[raw.layout] ?? 'table',
     filter: raw.filter ?? '',
     ...(columnField?.id ? { columnFieldId: columnField.id } : {}),
+    ...(visibleFieldIds.length ? { visibleFieldIds } : {}),
+    ...(sortBy.length ? { sortBy } : {}),
+    ...(groupField?.id ? { groupByFieldId: groupField.id } : {}),
   };
 }
 
@@ -224,12 +233,22 @@ export function mapItem(raw: RawItem, customFieldIds?: ReadonlySet<string>): Pro
     ...(c?.stateReason ? { stateReason: c.stateReason } : {}),
     ...(type === 'PullRequest' ? { isDraftPullRequest: c?.isDraft ?? false } : {}),
     ...(c?.repository ? { repository: c.repository.nameWithOwner } : {}),
+    ...(c?.milestone ? { milestone: c.milestone.title } : {}),
+    ...(c?.parent ? { parent: { number: c.parent.number, title: c.parent.title, ...(c.parent.url ? { url: c.parent.url } : {}) } } : {}),
+    ...(c?.subIssuesSummary && c.subIssuesSummary.total > 0
+      ? { subIssues: { total: c.subIssuesSummary.total, completed: c.subIssuesSummary.completed } }
+      : {}),
+    ...(compact(c?.closedByPullRequestsReferences?.nodes).length
+      ? { linkedPullRequests: compact(c?.closedByPullRequestsReferences?.nodes).map((pr) => ({ number: pr.number, url: pr.url })) }
+      : {}),
     labels: compact(c?.labels?.nodes).map((l) => ({ name: l.name, color: l.color })),
     assignees: compact(c?.assignees?.nodes).map((u) => ({
       login: u.login,
       ...(u.avatarUrl ? { avatarUrl: u.avatarUrl } : {}),
     })),
     fieldValues,
+    ...(c?.createdAt ? { createdAt: c.createdAt } : {}),
+    ...(c?.closedAt ? { closedAt: c.closedAt } : {}),
     updatedAt: raw.updatedAt,
   };
 }

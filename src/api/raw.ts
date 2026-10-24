@@ -53,6 +53,9 @@ export interface RawView {
   layout: 'BOARD_LAYOUT' | 'TABLE_LAYOUT' | 'ROADMAP_LAYOUT';
   filter: string | null;
   verticalGroupByFields?: RawConnection<RawFieldRef> | null;
+  fields?: { nodes: (RawFieldRef | null)[] | null } | null;
+  sortByFields?: { nodes: ({ direction: string; field: RawFieldRef | null } | null)[] | null } | null;
+  groupByFields?: { nodes: (RawFieldRef | null)[] | null } | null;
 }
 
 export interface RawViewsResponse {
@@ -114,6 +117,12 @@ export interface RawContent {
   repository?: { nameWithOwner: string } | null;
   labels?: RawConnection<RawLabel> | null;
   assignees?: RawConnection<RawUser> | null;
+  milestone?: { title: string } | null;
+  createdAt?: string | null;
+  closedAt?: string | null;
+  parent?: { number: number; title: string; url?: string | null } | null;
+  subIssuesSummary?: { total: number; completed: number } | null;
+  closedByPullRequestsReferences?: { nodes: ({ number: number; url: string } | null)[] | null } | null;
 }
 
 export interface RawFieldValue {

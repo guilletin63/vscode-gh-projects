@@ -1,5 +1,16 @@
 # Changelog
 
+## 1.1.0
+
+- **Table views** open as tables: the fields the view shows on GitHub, in the same order, with
+  the view's sort and group-by. Click a column header to sort; change the grouping from the
+  toolbar. Shows parent issue, sub-issues progress, linked pull requests, milestone and
+  created / updated / closed dates too.
+- **Roadmap views** open as a timeline: bars placed by an iteration field or start / target date
+  fields (chosen in the toolbar), colored by Status, with month and iteration headers, a line for
+  today and Month / Quarter / Year zoom. Items without dates are listed at the end.
+- Board views work as before; "Column by" now only shows on boards.
+
 ## 1.0.1
 
 - Fix: the Projects tree showed "Your GitHub session is missing a scope" after signing in. Listing

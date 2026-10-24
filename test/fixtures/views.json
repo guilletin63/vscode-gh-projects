@@ -15,6 +15,43 @@
                 "endCursor": null,
                 "hasNextPage": false
               }
+            },
+            "fields": {
+              "nodes": [
+                {
+                  "id": "PVTF_lAHOBCq4Uc4Bm3B-zhleRwI"
+                },
+                {
+                  "id": "PVTF_lAHOBCq4Uc4Bm3B-zhleRwM"
+                },
+                {
+                  "id": "PVTSSF_lAHOBCq4Uc4Bm3B-zhleRwQ"
+                },
+                {
+                  "id": "PVTF_lAHOBCq4Uc4Bm3B-zhleRwY"
+                },
+                {
+                  "id": "PVTF_lAHOBCq4Uc4Bm3B-zhleRw4"
+                },
+                {
+                  "id": "PVTSSF_lAHOBCq4Uc4Bm3B-zhleTWk"
+                },
+                {
+                  "id": "PVTSSF_lAHOBCq4Uc4Bm3B-zhleTjM"
+                },
+                {
+                  "id": "PVTSSF_lAHOBCq4Uc4Bm3B-zhleTv0"
+                },
+                {
+                  "id": "PVTSSF_lAHOBCq4Uc4Bm3B-zhleT3Y"
+                }
+              ]
+            },
+            "sortByFields": {
+              "nodes": []
+            },
+            "groupByFields": {
+              "nodes": []
             }
           },
           {
@@ -34,6 +71,31 @@
                 "endCursor": "MQ",
                 "hasNextPage": false
               }
+            },
+            "fields": {
+              "nodes": [
+                {
+                  "id": "PVTF_lAHOBCq4Uc4Bm3B-zhleRwI"
+                },
+                {
+                  "id": "PVTF_lAHOBCq4Uc4Bm3B-zhleRwM"
+                },
+                {
+                  "id": "PVTSSF_lAHOBCq4Uc4Bm3B-zhleRwQ"
+                },
+                {
+                  "id": "PVTF_lAHOBCq4Uc4Bm3B-zhleRwY"
+                },
+                {
+                  "id": "PVTF_lAHOBCq4Uc4Bm3B-zhleRw4"
+                }
+              ]
+            },
+            "sortByFields": {
+              "nodes": []
+            },
+            "groupByFields": {
+              "nodes": []
             }
           }
         ],
