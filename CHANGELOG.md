@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.3.0
+
+- **Projects shared with you** show up in the tree: owners of projects linked to repositories you
+  collaborate on (someone else's repositories) are listed after your organizations, marked
+  "shared with you". No need to add them with "Add Owner…".
+
 ## 1.2.2
 
 - Fix: dragging cards and table rows with the mouse still didn't work in recent VS Code versions,

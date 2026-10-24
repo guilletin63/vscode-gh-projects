@@ -30,6 +30,7 @@ import type {
   RawSelectOption,
   RawOwner,
   RawOwnerLookupResponse,
+  RawSharedOwnersResponse,
   RawProject,
   RawProjectsResponse,
   RawView,
@@ -71,6 +72,24 @@ export function mapOwnerLookup(raw: RawOwnerLookupResponse): Owner | undefined {
   const o = raw.repositoryOwner;
   if (!o) return undefined;
   return { ...mapOwner(o, o.__typename === 'Organization' ? 'Organization' : 'User', false), isManual: true };
+}
+
+/**
+ * Owners of open projects in one page of collaborator repositories, without the viewer and
+ * without repeats.
+ */
+export function mapSharedOwners(raw: RawSharedOwnersResponse): Page<Owner> {
+  const viewer = raw.viewer.login.toLowerCase();
+  const owners = new Map<string, Owner>();
+  for (const repo of compact(raw.viewer.repositories.nodes)) {
+    for (const project of compact(repo.projectsV2?.nodes)) {
+      const o = project.owner;
+      if (!o?.login || project.closed || o.login.toLowerCase() === viewer || owners.has(o.login.toLowerCase())) continue;
+      owners.set(o.login.toLowerCase(), { ...mapOwner(o, o.__typename === 'Organization' ? 'Organization' : 'User', false), isShared: true });
+    }
+  }
+  const { endCursor, hasNextPage } = raw.viewer.repositories.pageInfo;
+  return { nodes: [...owners.values()], endCursor, hasNextPage };
 }
 
 export function mapProject(raw: RawProject, ownerLogin: string): ProjectSummary {

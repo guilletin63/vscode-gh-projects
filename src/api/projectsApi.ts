@@ -4,7 +4,7 @@ import { toGraphQLValue } from '../model/edits';
 import type { ItemDetail, Owner, ProjectDetails, ProjectItem, ProjectSummary, ProjectView } from '../model/types';
 import type { GraphQLClient } from './client';
 import { GraphQLError } from './client';
-import { mapItemDetail, mapItems, mapOwnerLookup, mapProjectDetails, mapProjects, mapViewer, mapViews } from './mappers';
+import { mapItemDetail, mapItems, mapOwnerLookup, mapProjectDetails, mapProjects, mapSharedOwners, mapViewer, mapViews } from './mappers';
 import { paginate } from './paginate';
 import {
   ADD_DRAFT_ISSUE_MUTATION,
@@ -15,6 +15,7 @@ import {
   PROJECT_ITEM_IDS_QUERY,
   PROJECT_ITEMS_QUERY,
   PROJECTS_QUERY,
+  SHARED_OWNERS_QUERY,
   UPDATE_FIELD_VALUE_MUTATION,
   UPDATE_ITEM_POSITION_MUTATION,
   VIEWER_ONLY_QUERY,
@@ -27,6 +28,7 @@ import type {
   RawOwnerLookupResponse,
   RawProjectDetailsResponse,
   RawProjectsResponse,
+  RawSharedOwnersResponse,
   RawViewerResponse,
   RawViewsResponse,
 } from './raw';
@@ -39,6 +41,11 @@ export interface LoadProgress {
 export interface ProjectsApi {
   /** The signed-in user followed by their organizations. */
   getOwners(): Promise<Owner[]>;
+  /**
+   * Owners of projects linked to repositories the user collaborates on (someone else's repos),
+   * so shared projects show up on their own. Empty when GitHub doesn't allow the query.
+   */
+  getSharedOwners(): Promise<Owner[]>;
   /** Resolves a user or organization login; undefined if it does not exist. */
   lookupOwner(login: string): Promise<Owner | undefined>;
   listProjects(ownerLogin: string): Promise<ProjectSummary[]>;
@@ -76,6 +83,18 @@ export class GitHubProjectsApi implements ProjectsApi {
       // the user's own projects (and manually added owners) instead of failing the tree.
       if (!(err instanceof GraphQLError && err.types.includes('INSUFFICIENT_SCOPES'))) throw err;
       return [mapViewer(await this.client.request<RawViewerResponse>(VIEWER_ONLY_QUERY)).viewer];
+    }
+  }
+
+  async getSharedOwners(): Promise<Owner[]> {
+    try {
+      const pages = await paginate(async (cursor) => mapSharedOwners(await this.client.request<RawSharedOwnersResponse>(SHARED_OWNERS_QUERY, { cursor })));
+      const seen = new Set<string>();
+      return pages.filter((o) => !seen.has(o.login.toLowerCase()) && seen.add(o.login.toLowerCase()));
+    } catch (err) {
+      // Repository access needs the `repo` scope; without it the tree still shows everything else.
+      if (err instanceof GraphQLError) return [];
+      throw err;
     }
   }
 

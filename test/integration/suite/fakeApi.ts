@@ -11,6 +11,9 @@ export const projects: Record<string, unknown[]> = {
     { id: 'P2', number: 2, title: 'Old', url: 'https://github.com/users/octo-user/projects/2', closed: true, ownerLogin: 'octo-user', itemCount: 0, updatedAt: '2025-01-01T00:00:00Z' },
   ],
   'octo-org': [],
+  friend: [
+    { id: 'P9', number: 9, title: 'Shared game', url: 'https://github.com/users/friend/projects/9', closed: false, ownerLogin: 'friend', itemCount: 4, updatedAt: '2026-01-01T00:00:00Z' },
+  ],
 };
 
 export const projectDetails = {
@@ -101,6 +104,11 @@ export function createFakeApi() {
       return items;
     },
     getOwners: async () => owners,
+    getSharedOwners: async () => [
+      { login: 'friend', kind: 'User', isViewer: false, isShared: true },
+      // Already listed as an organization: not repeated.
+      { login: 'octo-org', kind: 'Organization', isViewer: false, isShared: true },
+    ],
     lookupOwner: async (login: string) =>
       login === 'missing' ? undefined : { login, kind: 'Organization', isViewer: false, isManual: true },
     listProjects: async (login: string) => projects[login] ?? [],

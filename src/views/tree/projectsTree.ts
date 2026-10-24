@@ -60,8 +60,10 @@ export class ProjectsTreeProvider implements vscode.TreeDataProvider<TreeNode> {
       case 'owner': {
         const item = new vscode.TreeItem(node.owner.login, vscode.TreeItemCollapsibleState.Expanded);
         item.id = `owner:${node.owner.login}`;
-        item.description = node.owner.isViewer ? 'you' : node.owner.kind === 'Organization' ? 'org' : 'user';
-        item.tooltip = node.owner.name ?? node.owner.login;
+        item.description = node.owner.isViewer ? 'you' : node.owner.isShared ? 'shared with you' : node.owner.kind === 'Organization' ? 'org' : 'user';
+        item.tooltip = node.owner.isShared
+          ? `${node.owner.name ?? node.owner.login}: projects linked to repositories you collaborate on`
+          : (node.owner.name ?? node.owner.login);
         item.iconPath = new vscode.ThemeIcon(node.owner.kind === 'Organization' ? 'organization' : 'account');
         item.contextValue = node.owner.isManual ? 'owner.manual' : 'owner';
         return item;
@@ -140,7 +142,15 @@ export class ProjectsTreeProvider implements vscode.TreeDataProvider<TreeNode> {
         reportError(`Looking up owner ${login}`, err);
       }
     }
-    return [...owners, ...extra].map((owner) => ({ kind: 'owner', owner }));
+    // Owners of projects shared through repositories you collaborate on; a failure here must not
+    // hide the rest of the tree.
+    let shared: Owner[] = [];
+    try {
+      shared = (await this.getApi().getSharedOwners()).filter((o) => !known.has(o.login.toLowerCase()) && !extra.some((e) => e.login.toLowerCase() === o.login.toLowerCase()));
+    } catch (err) {
+      reportError('Looking for shared projects', err);
+    }
+    return [...owners, ...shared, ...extra].map((owner) => ({ kind: 'owner', owner }));
   }
 }
 

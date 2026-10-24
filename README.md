@@ -7,8 +7,9 @@ views you see at `github.com/users/<owner>/projects/<n>`, with cards you can mov
 
 ## Features
 
-- **Projects tree** in the Activity Bar: your user, your organizations and any owner you add,
-  with their open projects and views.
+- **Projects tree** in the Activity Bar: your user, your organizations, the owners of projects
+  shared with you (linked to repositories you collaborate on) and any owner you add, with their
+  open projects and views.
 - **Each view shows what it shows on GitHub**: the view's own filter (`-status:Done`,
   `assignee:@me`, `sprint:@current`…) is applied by GitHub itself, and can be switched off.
 - **Board** grouped by the view's "Column by" field (or `Status`, or the first single-select
@@ -65,9 +66,10 @@ extension uses the GitHub account VS Code already knows; nothing to configure.
 
 ### 2. Open a board
 
-Your user and organizations are listed with their open projects. Click a project to open its
-board, or expand it and pick one of its views. Use **Add Owner…** (＋ in the view title) for an
-organization that doesn't show up on its own.
+Your user and organizations are listed with their open projects, followed by people or
+organizations whose projects are linked to repositories you collaborate on (**shared with
+you**). Click a project to open its board, or expand it and pick one of its views. Use **Add
+Owner…** (＋ in the view title) for an owner that doesn't show up on its own.
 
 ![Open a board](docs/media/open-board.gif)
 
@@ -161,7 +163,8 @@ Click a card (or a table row, or a roadmap bar) to read its description and edit
   table or the item details.
 - A roadmap's date fields, zoom and markers set on github.com aren't available through GitHub's
   API; choose the dates in the panel (remembered per view).
-- Organizations whose membership is private may not be listed automatically; add them with
+- Organizations whose membership is private, and projects shared with you that aren't linked to
+  any repository you collaborate on, may not be listed automatically; add their owner with
   **Add Owner…**.
 
 ## Contributing

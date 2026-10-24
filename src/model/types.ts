@@ -12,6 +12,8 @@ export interface Owner {
   isViewer: boolean;
   /** Added by hand with "Add owner…" (e.g. an org not visible through the token). */
   isManual?: boolean;
+  /** Owns a project linked to a repository the user collaborates on (found automatically). */
+  isShared?: boolean;
 }
 
 export interface ProjectSummary {

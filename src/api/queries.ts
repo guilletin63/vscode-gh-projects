@@ -33,6 +33,33 @@ export const OWNER_LOOKUP_QUERY = /* GraphQL */ `
   }
 `;
 
+/**
+ * Owners of the projects linked to repositories the viewer collaborates on (someone else's
+ * repositories), so projects shared with the user show up without "Add owner…".
+ */
+export const SHARED_OWNERS_QUERY = /* GraphQL */ `
+  query SharedOwners($cursor: String) {
+    viewer {
+      login
+      repositories(first: 100, after: $cursor, affiliations: [COLLABORATOR]) {
+        pageInfo { endCursor hasNextPage }
+        nodes {
+          projectsV2(first: 20) {
+            nodes {
+              closed
+              owner {
+                __typename
+                ... on User { login name avatarUrl }
+                ... on Organization { login name avatarUrl }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+`;
+
 export const PROJECTS_QUERY = /* GraphQL */ `
   query Projects($login: String!, $cursor: String) {
     repositoryOwner(login: $login) {

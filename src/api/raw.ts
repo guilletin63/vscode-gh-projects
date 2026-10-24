@@ -22,6 +22,16 @@ export interface RawViewerResponse {
   viewer: RawOwner & { organizations?: RawConnection<RawOwner> | null };
 }
 
+export interface RawSharedOwnersResponse {
+  viewer: {
+    login: string;
+    repositories: {
+      pageInfo: RawPageInfo;
+      nodes: ({ projectsV2?: { nodes: ({ closed: boolean; owner: (RawOwner & { __typename: string }) | null } | null)[] | null } | null } | null)[] | null;
+    };
+  };
+}
+
 export interface RawOwnerLookupResponse {
   repositoryOwner: (RawOwner & { __typename: string }) | null;
 }

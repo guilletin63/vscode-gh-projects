@@ -28,7 +28,13 @@ suite('projects tree', () => {
     const roots = await api.__treeChildren();
     assert.deepStrictEqual(
       roots.map((n) => n.owner?.login),
-      ['octo-user', 'octo-org'],
+      ['octo-user', 'octo-org', 'friend'],
+      'owners of projects shared through collaborator repositories come after your organizations',
+    );
+    const shared = await api.__treeChildren(roots[2]);
+    assert.deepStrictEqual(
+      shared.map((n) => n.project?.title),
+      ['Shared game'],
     );
     const projects = await api.__treeChildren(roots[0]);
     assert.deepStrictEqual(

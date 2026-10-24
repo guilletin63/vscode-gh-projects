@@ -48,3 +48,37 @@ describe('getOwners', () => {
     await expect(a.getOwners()).rejects.toBeInstanceOf(HttpError);
   });
 });
+
+describe('getSharedOwners', () => {
+  const project = (login: string, typename = 'User', closed = false) => ({ closed, owner: { __typename: typename, login, name: null, avatarUrl: null } });
+  const page = (repos: unknown[], endCursor: string | null, hasNextPage: boolean) => ({
+    viewer: { login: 'me', repositories: { nodes: repos, pageInfo: { endCursor, hasNextPage } } },
+  });
+
+  it("finds the owners of open projects in repositories you collaborate on, once each", async () => {
+    const pages = [
+      page([{ projectsV2: { nodes: [project('friend'), project('me')] } }, { projectsV2: { nodes: [project('Friend'), project('old', 'User', true)] } }, null], 'c1', true),
+      page([{ projectsV2: { nodes: [project('acme', 'Organization')] } }, { projectsV2: null }], 'c2', false),
+    ];
+    const { api: a } = api(() => pages.shift());
+    const owners = await a.getSharedOwners();
+    expect(owners.map((o) => [o.login, o.kind, o.isShared, o.isViewer])).toEqual([
+      ['friend', 'User', true, false],
+      ['acme', 'Organization', true, false],
+    ]);
+  });
+
+  it('returns nothing when GitHub refuses the query (e.g. no repo scope)', async () => {
+    const { api: a } = api(() => {
+      throw new GraphQLError('Your token has not been granted the required scopes', [{ message: 'x', type: 'INSUFFICIENT_SCOPES' }]);
+    });
+    expect(await a.getSharedOwners()).toEqual([]);
+  });
+
+  it('still fails on network errors', async () => {
+    const { api: a } = api(() => {
+      throw new HttpError(502, 'Bad gateway');
+    });
+    await expect(a.getSharedOwners()).rejects.toBeInstanceOf(HttpError);
+  });
+});
