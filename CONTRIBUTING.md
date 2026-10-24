@@ -103,6 +103,11 @@ builds GraphQL; it calls `ProjectsApi` methods that return model types.
 - `npm run demo -- --demo open|move|filter|detail|all` records the README GIFs into `docs/media`
   (needs `ffmpeg` and Python with Pillow). `move` and `detail` change a Status and a Priority in
   the sandbox; set them back before recording again.
+- `npm run drag-check -- "<card title>" "<column>" [--table]` drags a card (or a table row) with
+  real mouse input and checks where it lands. Run it after touching drag & drop: tests that fire
+  DOM drag events can't see a drag that Chromium cancels by itself (for example when the page
+  changes styles inside `dragstart`). It moves one sandbox item; drag it back afterwards. If the
+  first press misses (`drag started: false`, no events), run it again.
 
 ## Publishing
 

@@ -5,5 +5,5 @@
     "types": ["node", "vscode"]
   },
   "include": ["src/**/*.ts", "test/unit/**/*.ts", "test/live/**/*.ts", "vitest.config.mts", "vitest.live.config.mts"],
-  "exclude": ["src/webview/**", "test/unit/sanitize.test.ts"]
+  "exclude": ["src/webview/**", "test/unit/sanitize.test.ts", "test/unit/dnd.test.ts"]
 }

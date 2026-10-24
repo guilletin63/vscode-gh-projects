@@ -2,7 +2,7 @@
   "name": "vscode-gh-projects",
   "displayName": "GitHub Projects in VS Code",
   "description": "GitHub Projects (v2) inside VS Code: board, table and roadmap views, drag & drop, filters, item details and an in-progress counter.",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "publisher": "guilletin63",
   "license": "MIT",
   "icon": "media/icon.png",
@@ -179,6 +179,7 @@
     "package": "vsce package --no-dependencies",
     "vscode:prepublish": "npm run build -- --production",
     "screenshot": "node scripts/screenshot.mjs",
+    "drag-check": "node scripts/drag-check.mjs",
     "test:live": "node scripts/test-live.mjs",
     "demo": "node scripts/record-demo.mjs"
   },

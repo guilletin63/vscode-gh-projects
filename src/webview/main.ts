@@ -768,14 +768,14 @@ function boardView(board: BoardState, visible: ProjectItem[]): HTMLElement {
   };
   const label = `Board grouped by ${groupField?.name ?? 'nothing'}`;
   if (!laneField || laneField.id === groupField?.id) {
-    const columns = buildColumns(sorted, groupField, { alwaysIncludeNone: !!groupField });
+    const columns = boardColumns(sorted, groupField);
     const ctx: CardContext = { ...base, columns };
     return h('main', { class: 'board', 'aria-label': label }, columns.map((c) => columnView(c, ctx)));
   }
   // Swimlanes: one row of columns per value of the view's "Group by" field.
   const collapsed = collapsedGroups(view);
   const lanes = groupItems(sorted, laneField).map((lane) => {
-    const columns = buildColumns(lane.items, groupField, { alwaysIncludeNone: !!groupField });
+    const columns = boardColumns(lane.items, groupField);
     const input = groupInput(laneField, lane.id);
     const ctx: CardContext = { ...base, columns, laneId: lane.id, ...(input !== undefined ? { lane: { field: laneField, input } } : {}) };
     const folded = collapsed.has(lane.id);
@@ -801,6 +801,17 @@ function boardView(board: BoardState, visible: ProjectItem[]): HTMLElement {
     );
   });
   return h('main', { class: 'board with-lanes', 'aria-label': `${label}, swimlanes by ${laneField.name}` }, lanes);
+}
+
+/**
+ * Columns of a board. An empty "No <field>" column only shows while dragging, as a drop target;
+ * it goes last so its appearance doesn't shift the columns under the pointer.
+ */
+function boardColumns(items: ProjectItem[], groupField: ProjectField | undefined): Column[] {
+  const columns = buildColumns(items, groupField, { alwaysIncludeNone: !!groupField });
+  const first = columns[0];
+  if (first?.id === NO_VALUE_COLUMN && first.items.length === 0 && groupField) columns.push(columns.shift()!);
+  return columns;
 }
 
 interface CardContext {

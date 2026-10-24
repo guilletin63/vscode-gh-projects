@@ -36,14 +36,25 @@ export function makeDraggable(el: HTMLElement, itemId: string, root: HTMLElement
     }
     e.dataTransfer?.setData(DRAG_TYPE, itemId);
     if (e.dataTransfer) e.dataTransfer.effectAllowed = 'move';
-    el.classList.add('dragging');
-    root.classList.add('is-dragging');
+    // Changing styles during 'dragstart' makes Chromium cancel the drag right away (dragend
+    // follows at once), so the dragging look is applied on the next tick.
+    setTimeout(() => {
+      el.classList.add('dragging');
+      root.classList.add('is-dragging');
+    }, 0);
   });
   el.addEventListener('dragend', () => {
+    // After the deferred 'dragging' classes, even for a drag that ends at once.
+    setTimeout(() => clearDragging(el, root), 0);
+  });
+}
+
+function clearDragging(el: HTMLElement, root: HTMLElement): void {
+  {
     el.classList.remove('dragging');
     root.classList.remove('is-dragging');
     clearDropMarks(root);
-  });
+  }
 }
 
 /** The item element (card or row) under a drop, if any. */

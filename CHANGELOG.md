@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.2.1
+
+- Fix: dragging board cards and table rows with the mouse did nothing (the drag was cancelled as
+  soon as it started). Keyboard moves and the Move menu were not affected.
+- While dragging, the empty "No <field>" drop column now appears at the end of the board instead
+  of the start, so the columns don't shift under the pointer.
+
 ## 1.2.0
 
 - **Drag rows between table groups** to set the group's value (single-select, iteration, number,
