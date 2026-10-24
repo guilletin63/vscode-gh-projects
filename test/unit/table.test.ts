@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { NO_VALUE_GROUP, cellText, groupItems, groupableFields, sortItems, tableColumns } from '../../src/model/table';
+import { NO_VALUE_GROUP, cellText, fieldSum, groupInput, groupItems, groupableFields, isEditableField, sortItems, tableColumns } from '../../src/model/table';
 import type { FieldValue, ProjectField, ProjectItem, ProjectView } from '../../src/model/types';
 
 const builtin = (id: string, name: string, dataType: string): ProjectField => ({ id, name, dataType, kind: 'builtin' });
@@ -130,5 +130,25 @@ describe('groupItems', () => {
 
   it('only offers fields GitHub can group by', () => {
     expect(groupableFields(fields).map((f) => f.name)).toEqual(['Assignees', 'Status', 'Estimate', 'Sprint']);
+  });
+});
+
+describe('editing through groups', () => {
+  it('turns a group into the value an item dropped on it gets', () => {
+    expect(groupInput(status, 'Done')).toEqual({ kind: 'singleSelect', optionId: 'Done' });
+    expect(groupInput(status, NO_VALUE_GROUP)).toBeNull();
+    expect(groupInput(status, 'nope')).toBeUndefined();
+    expect(groupInput(sprint, 'it1')).toEqual({ kind: 'iteration', iterationId: 'it1' });
+    expect(groupInput(estimate, '5')).toEqual({ kind: 'number', number: 5 });
+    expect(groupInput({ id: 'D', name: 'Due', dataType: 'DATE', kind: 'date' }, '2026-10-01')).toEqual({ kind: 'date', date: '2026-10-01' });
+    expect(groupInput({ id: 'N', name: 'Notes', dataType: 'TEXT', kind: 'text' }, 'x')).toEqual({ kind: 'text', text: 'x' });
+    expect(groupInput(assignees, 'ana')).toBeUndefined();
+    expect(isEditableField(status)).toBe(true);
+    expect(isEditableField(assignees)).toBe(false);
+  });
+
+  it('sums number fields', () => {
+    expect(fieldSum([item('a', { values: [est(2.5)] }), item('b'), item('c', { values: [est(3)] })], estimate)).toBe(5.5);
+    expect(fieldSum([item('a')], estimate)).toBeUndefined();
   });
 });

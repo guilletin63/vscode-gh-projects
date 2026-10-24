@@ -1170,3 +1170,155 @@ input.search::placeholder {
   flex: none;
   font-size: 0.85em;
 }
+
+/* ---- editing: drop positions, add item, inline cells, bar handles ---- */
+
+.item-row.drop-before td {
+  box-shadow: inset 0 2px 0 var(--vscode-focusBorder);
+}
+
+.item-row.drop-after td {
+  box-shadow: inset 0 -2px 0 var(--vscode-focusBorder);
+}
+
+.card.drop-before {
+  box-shadow: 0 -3px 0 var(--vscode-focusBorder);
+}
+
+.card.drop-after {
+  box-shadow: 0 3px 0 var(--vscode-focusBorder);
+}
+
+tbody.drop-target .group-row th {
+  color: var(--vscode-focusBorder);
+}
+
+.item-row.dragging,
+.card.dragging {
+  opacity: 0.5;
+}
+
+.item-row[draggable='true'] {
+  cursor: grab;
+}
+
+.add-button {
+  font: inherit;
+  color: var(--vscode-descriptionForeground);
+  background: transparent;
+  border: none;
+  border-radius: 4px;
+  padding: 4px 6px;
+  cursor: pointer;
+}
+
+.add-button:hover {
+  color: var(--vscode-foreground);
+  background: var(--vscode-toolbar-hoverBackground);
+}
+
+.column-add {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 8px 8px;
+}
+
+.add-input {
+  flex: 1;
+  min-width: 220px;
+  color: var(--vscode-input-foreground);
+  background: var(--vscode-input-background);
+  border: 1px solid var(--vscode-input-border, var(--vscode-focusBorder));
+}
+
+.add-row td {
+  padding: 4px 10px;
+}
+
+.items-table td.editable {
+  padding: 0;
+}
+
+.cell-button {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  min-height: 30px;
+  padding: 5px 10px;
+  font: inherit;
+  color: inherit;
+  text-align: inherit;
+  background: transparent;
+  border: none;
+  cursor: text;
+}
+
+.kind-number .cell-button {
+  justify-content: flex-end;
+}
+
+.cell-button:hover {
+  outline: 1px solid var(--vscode-input-border, var(--vscode-focusBorder));
+  outline-offset: -3px;
+}
+
+.cell-editor {
+  width: 100%;
+  min-width: 140px;
+}
+
+.group-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 2px 4px;
+  font: inherit;
+  font-weight: 600;
+  color: var(--vscode-foreground);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+}
+
+.group-toggle .chevron {
+  width: 10px;
+  color: var(--vscode-descriptionForeground);
+}
+
+.field-sums {
+  font-weight: normal;
+  font-size: 0.9em;
+  white-space: nowrap;
+}
+
+.column-header .field-sums {
+  margin-left: auto;
+}
+
+.roadmap-bar.draggable {
+  cursor: grab;
+  touch-action: none;
+}
+
+.roadmap-bar.dragging {
+  cursor: grabbing;
+  z-index: 2;
+  box-shadow: 0 2px 8px var(--vscode-widget-shadow);
+}
+
+.bar-handle {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 7px;
+  cursor: ew-resize;
+}
+
+.bar-handle.start {
+  left: 0;
+}
+
+.bar-handle.end {
+  right: 0;
+}

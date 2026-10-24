@@ -45,6 +45,19 @@ const pick = (label, option) => `(doc) => {
   return true;
 }`;
 
+/** Webview action: drags the table row titled `title` into the group named `group`. */
+const dragRow = (title, group) => `(doc) => {
+  const row = [...doc.querySelectorAll('.item-row')].find((r) => r.textContent.includes(${JSON.stringify(title)}));
+  const target = [...doc.querySelectorAll('tbody[data-group-id]')].find((b) => b.querySelector('.group-name')?.textContent === ${JSON.stringify(group)});
+  if (!row || !target) return false;
+  const dt = new DataTransfer();
+  row.dispatchEvent(new DragEvent('dragstart', { bubbles: true, dataTransfer: dt }));
+  const header = target.querySelector('.group-row th');
+  header.dispatchEvent(new DragEvent('dragover', { bubbles: true, cancelable: true, dataTransfer: dt }));
+  header.dispatchEvent(new DragEvent('drop', { bubbles: true, cancelable: true, dataTransfer: dt }));
+  return true;
+}`;
+
 const webviewShown = "!!document.querySelector('.webview.ready, iframe.webview')";
 
 export const scenarios = {
@@ -123,6 +136,76 @@ export const scenarios = {
       { webview: `(doc) => { const r = [...doc.querySelectorAll('.item-row')].find((x) => x.textContent.includes('M6:')); if (!r) return false; r.click(); return true; }` },
       { webview: "(doc) => !!doc.querySelector('.detail-body') && !doc.querySelector('.detail-body')?.textContent?.startsWith('Loading')" },
       { wait: 2000 },
+    ],
+  },
+  // WRITES to the sandbox: table grouped by Status, drags a Todo draft into "In Progress".
+  'sandbox-table-drag': {
+    needsToken: true,
+    steps: [
+      { command: 'ghProjects.openBoard', args: [{ project: SANDBOX, viewId: 'PVTV_lAHOBCq4Uc4BoSUHzgMMTSw' }] },
+      { command: 'workbench.action.closeSidebar' },
+    ],
+    waitFor: webviewShown,
+    actions: [
+      { webview: "(doc) => doc.querySelectorAll('.item-row').length > 0" },
+      { webview: pick('Group by', 'Status') },
+      { webview: "(doc) => doc.querySelectorAll('tbody[data-group-id]').length > 1" },
+      { webview: dragRow('Draft: empty column copy', 'In Progress') },
+      { wait: 4000 },
+    ],
+  },
+  // WRITES to the sandbox: edits a draft's Priority in place from the table.
+  'sandbox-table-edit': {
+    needsToken: true,
+    steps: [
+      { command: 'ghProjects.openBoard', args: [{ project: SANDBOX, viewId: 'PVTV_lAHOBCq4Uc4BoSUHzgMMTSw' }] },
+      { command: 'workbench.action.closeSidebar' },
+    ],
+    waitFor: webviewShown,
+    actions: [
+      { webview: "(doc) => doc.querySelectorAll('.item-row').length > 0" },
+      { webview: pick('Group by', 'None') },
+      {
+        webview: `(doc) => {
+          const row = [...doc.querySelectorAll('.item-row')].find((r) => r.textContent.includes('Draft: keyboard navigation'));
+          const cells = [...doc.querySelectorAll('.items-table thead th')].map((th) => th.textContent);
+          const button = row?.children[cells.indexOf('Priority')]?.querySelector('.cell-button');
+          if (!button) return false;
+          button.click();
+          return true;
+        }`,
+      },
+      { webview: "(doc) => !!doc.querySelector('select.cell-editor')" },
+      { wait: 1500 },
+    ],
+  },
+  // WRITES to the sandbox: roadmap by Due, drags the M5 bar three days later.
+  'sandbox-roadmap-drag': {
+    needsToken: true,
+    steps: [
+      { command: 'ghProjects.openBoard', args: [{ project: SANDBOX, viewId: 'PVTV_lAHOBCq4Uc4BoSUHzgMNwQM' }] },
+      { command: 'workbench.action.closeSidebar' },
+    ],
+    waitFor: webviewShown,
+    actions: [
+      { webview: "(doc) => doc.querySelectorAll('.roadmap-row').length > 0" },
+      { webview: pick('Start', 'Due') },
+      { webview: pick('Target', 'Due') },
+      { webview: pick('Group by', 'None') },
+      {
+        webview: `(doc) => {
+          const row = [...doc.querySelectorAll('.roadmap-row')].find((r) => r.textContent.includes('M5: Move cards'));
+          const bar = row?.querySelector('.roadmap-bar.draggable');
+          if (!bar) return false;
+          const r = bar.getBoundingClientRect();
+          const at = (type, x) => bar.dispatchEvent(new PointerEvent(type, { bubbles: true, button: 0, pointerId: 1, clientX: x, clientY: r.top + 5 }));
+          at('pointerdown', r.left + 10);
+          at('pointermove', r.left + 10 + 3 * 30);
+          at('pointerup', r.left + 10 + 3 * 30);
+          return true;
+        }`,
+      },
+      { wait: 4000 },
     ],
   },
   // Label + Status filter. The filter only lives in the throw-away harness profile.

@@ -92,4 +92,33 @@ describe.skipIf(!token)('sandbox writes (live)', () => {
     nodes = await read();
     for (const name of ['Notes', 'Estimate', 'Due', 'Sprint']) expect(byField(nodes, name)).toBeUndefined();
   });
+
+  it('moves an item in the project order and back', async () => {
+    const order = async () => {
+      const r = await client.request<{ node: { items: { nodes: { id: string }[] } } }>(
+        `query($id: ID!) { node(id: $id) { ... on ProjectV2 { items(first: 100) { nodes { id } } } } }`,
+        { id: SANDBOX_ID },
+      );
+      return r.node.items.nodes.map((n) => n.id);
+    };
+    const before = await order();
+    const index = before.indexOf(ITEM_ID);
+    const previous = index > 0 ? before[index - 1] : undefined;
+    await api.setItemPosition(SANDBOX_ID, ITEM_ID, undefined);
+    expect((await order())[0]).toBe(ITEM_ID);
+    await api.setItemPosition(SANDBOX_ID, ITEM_ID, previous);
+    expect(await order()).toEqual(before);
+  });
+
+  it('adds a draft issue (then archives it)', async () => {
+    const id = await api.addDraftIssue(SANDBOX_ID, 'Live test draft');
+    expect(id).toMatch(/^PVTI_/);
+    const status = project.fields.find((f) => f.name === 'Status')!;
+    await api.setFieldValue(SANDBOX_ID, id, status.id, { kind: 'singleSelect', optionId: status.options![0]!.id });
+    await client.request(
+      `mutation($p: ID!, $i: ID!) { archiveProjectV2Item(input: { projectId: $p, itemId: $i }) { item { id } } }`,
+      { p: SANDBOX_ID, i: id },
+      { write: true },
+    );
+  });
 });

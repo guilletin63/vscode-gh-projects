@@ -2,20 +2,22 @@
 import { NO_VALUE_COLUMN, buildColumns, cardFields, resolveGroupField } from '../model/board';
 import type { Column } from '../model/board';
 import type { FieldInput } from '../model/edits';
-import { PendingEdits } from '../model/edits';
+import { PendingEdits, afterIdFor, isSameValue } from '../model/edits';
 import type { BoardFilter } from '../model/filter';
 import { applyFilter, buildFacets } from '../model/filter';
-import { dateFields, dayNumber, resolveDateSource } from '../model/roadmap';
-import type { DateSource } from '../model/roadmap';
-import { groupableFields } from '../model/table';
+import { canDragDates, dateEdits, dateFields, dayNumber, isoDay, resolveDateSource } from '../model/roadmap';
+import type { DateSource, Span } from '../model/roadmap';
+import { fieldSum, groupInput, groupableFields, sortItems } from '../model/table';
 import type { FieldValue, ItemDetail, ProjectField, ProjectItem, ProjectView, ViewSort } from '../model/types';
 import type { BoardState, HostMessage, WebviewMessage } from '../shared/protocol';
 import { h, icons } from './dom';
 import { detailPanel } from './detail';
+import type { Place } from './dnd';
+import { DRAG_TYPE, clearDropMarks, isItemDrag, itemUnder, makeDraggable, markDropPlace } from './dnd';
 import { filterBar } from './filterBar';
 import { assigneeList, formatDate, itemRef, labelList, labelledIcon } from './itemParts';
 import type { Zoom } from './roadmapView';
-import { ZOOM_SCALE, roadmapView } from './roadmapView';
+import { ZOOM_SCALE, isBarDragging, roadmapView } from './roadmapView';
 import { tableView } from './tableView';
 
 interface VsCodeApi {
@@ -36,10 +38,14 @@ interface UiState {
   openMenu?: string;
   detail?: { itemId: string; detail?: ItemDetail; error?: string };
   prExtension?: boolean;
+  /** Table cell being edited in place; `focus` asks the next render to focus its editor. */
+  editing?: { itemId: string; fieldId: string; focus?: boolean };
+  /** "Add item" input being typed into (board column or table group), and its request. */
+  adding?: { key: string; pending?: boolean; requestId?: string };
 }
 const ui: UiState = {};
 const pending = new PendingEdits();
-const DRAG_TYPE = 'application/x-ghp-item';
+let addSeq = 0;
 
 // Persisted panel identity (for the serializer) + webview-only UI state.
 const persisted = JSON.parse(document.body.dataset.persisted ?? '{}') as Record<string, unknown>;
@@ -64,6 +70,8 @@ interface ViewPrefs {
   startFieldId?: string;
   endFieldId?: string;
   zoom?: Zoom;
+  /** Folded groups (table, roadmap) and swimlanes. */
+  collapsed?: string[];
 }
 
 function allPrefs(): Record<string, ViewPrefs> {
@@ -118,6 +126,17 @@ function toggleSort(view: ProjectView | undefined, fieldId: string): void {
   render();
 }
 
+function collapsedGroups(view: ProjectView | undefined): Set<string> {
+  return new Set(prefsFor(view?.id).collapsed ?? []);
+}
+
+function toggleGroup(view: ProjectView | undefined, groupId: string): void {
+  const collapsed = collapsedGroups(view);
+  if (collapsed.has(groupId)) collapsed.delete(groupId);
+  else collapsed.add(groupId);
+  setPrefs(view?.id, { collapsed: [...collapsed] });
+}
+
 /** Today's local calendar day. */
 function today(): number {
   const d = new Date();
@@ -153,6 +172,101 @@ function editField(itemId: string, field: ProjectField, input: FieldInput): void
   render();
 }
 
+/** Moves an item in the project order: shown immediately, rolled back if GitHub rejects it. */
+function setPosition(itemId: string, afterId: string | undefined): void {
+  const board = ui.board;
+  if (!board) return;
+  const { requestId, items } = pending.applyPosition(board.items, itemId, afterId);
+  ui.board = { ...board, items };
+  send({ type: 'setPosition', requestId, itemId, ...(afterId ? { afterId } : {}) });
+}
+
+/**
+ * An item dropped into a column or group (sets `field` when given and different) and/or next to
+ * another item (changes its position).
+ */
+function dropItem(itemId: string, change: { field?: ProjectField; input?: FieldInput }, next?: { targetId: string; place: Place }): void {
+  const board = ui.board;
+  const item = board?.items.find((i) => i.id === itemId);
+  if (!board || !item) return;
+  ui.openMenu = undefined;
+  const { field, input } = change;
+  const regroup = field && input !== undefined && !isSameValue(item.fieldValues[field.id], input);
+  if (regroup) {
+    const { requestId, items } = pending.apply(board.items, itemId, field, input);
+    ui.board = { ...board, items };
+    send({ type: 'setField', requestId, itemId, fieldId: field.id, input });
+    announce(`Moved ${item.title} to ${input === null ? `No ${field.name}` : groupLabel(field, input)}`);
+  }
+  if (next && ui.board) {
+    const afterId = afterIdFor(ui.board.items, itemId, next.targetId, next.place);
+    if (afterId !== null) {
+      setPosition(itemId, afterId);
+      if (!regroup) announce(`Moved ${item.title}`);
+    }
+  }
+  render();
+  app.querySelector<HTMLElement>(`[data-item-id="${CSS.escape(itemId)}"][tabindex]`)?.focus();
+}
+
+function groupLabel(field: ProjectField, input: Exclude<FieldInput, null>): string {
+  switch (input.kind) {
+    case 'singleSelect':
+      return field.options?.find((o) => o.id === input.optionId)?.name ?? '';
+    case 'iteration':
+      return field.iterations?.find((i) => i.id === input.iterationId)?.title ?? '';
+    case 'number':
+      return String(input.number);
+    case 'date':
+      return formatDate(input.date);
+    case 'text':
+      return input.text;
+  }
+}
+
+function startAdd(key: string): void {
+  ui.adding = { key };
+  render();
+  app.querySelector<HTMLInputElement>('.add-input')?.focus();
+}
+
+function cancelAdd(): void {
+  if (ui.adding?.pending) return;
+  ui.adding = undefined;
+  render();
+}
+
+/** Adds a draft issue with the value of the column or group it was typed into. */
+function addDraft(key: string, title: string, field?: ProjectField, input?: FieldInput): void {
+  const requestId = `add-${++addSeq}`;
+  ui.adding = { key, pending: true, requestId };
+  send({
+    type: 'addDraft',
+    requestId,
+    title,
+    ...(field && input !== undefined && input !== null ? { fieldId: field.id, input } : {}),
+  });
+  render();
+}
+
+/** Writes a roadmap bar's new dates (one or two date fields). */
+function setSpan(itemId: string, span: Span, source: DateSource): void {
+  const board = ui.board;
+  const item = board?.items.find((i) => i.id === itemId);
+  if (!board || !item) return;
+  for (const edit of dateEdits(item, source, span)) {
+    const field = board.project.fields.find((f) => f.id === edit.fieldId);
+    if (field) {
+      const { requestId, items } = pending.apply(ui.board!.items, itemId, field, { kind: 'date', date: edit.date });
+      ui.board = { ...ui.board!, items };
+      send({ type: 'setField', requestId, itemId, fieldId: field.id, input: { kind: 'date', date: edit.date } });
+    }
+  }
+  announce(`${item.title}: ${formatDate(isoDay(span.start))} to ${formatDate(isoDay(span.end))}`);
+  render();
+  app.querySelector<HTMLElement>(`.roadmap-row[data-item-id="${CSS.escape(itemId)}"]`)?.focus();
+}
+
 function openDetail(itemId: string): void {
   ui.detail = { itemId };
   ui.openMenu = undefined;
@@ -168,23 +282,20 @@ function closeDetail(): void {
   if (itemId) app.querySelector<HTMLElement>(`[data-item-id="${CSS.escape(itemId)}"][tabindex]`)?.focus();
 }
 
-/** Moves a card to a column by setting the grouping field; optimistic, rolled back on failure. */
-function moveItem(itemId: string, columnId: string): void {
+/**
+ * Moves a card to a column by setting the grouping field, and next to another card when
+ * dropped on one; optimistic, rolled back on failure.
+ */
+function moveItem(itemId: string, columnId: string, next?: { targetId: string; place: Place }): void {
   const board = ui.board;
   if (!board) return;
-  const field = resolveGroupField(board.project.fields, board.project.views.find((v) => v.id === board.viewId), board.groupFieldId);
-  const item = board.items.find((i) => i.id === itemId);
-  if (!field || !item) return;
-  const current = item.fieldValues[field.id];
-  const currentColumn = current?.kind === 'singleSelect' ? current.optionId : NO_VALUE_COLUMN;
-  if (currentColumn === columnId) return;
+  const field = resolveGroupField(board.project.fields, currentView(board), board.groupFieldId);
+  if (!field) {
+    if (next) dropItem(itemId, {}, next);
+    return;
+  }
   const input: FieldInput = columnId === NO_VALUE_COLUMN ? null : { kind: 'singleSelect', optionId: columnId };
-  ui.openMenu = undefined;
-  editField(itemId, field, input);
-  const target = columnId === NO_VALUE_COLUMN ? `No ${field.name}` : field.options?.find((o) => o.id === columnId)?.name;
-  announce(`Moved ${item.title} to ${target ?? columnId}`);
-  // Keep keyboard users on the card they moved.
-  app.querySelector<HTMLElement>(`.card[data-item-id="${CSS.escape(itemId)}"]`)?.focus();
+  dropItem(itemId, { field, input }, next);
 }
 
 window.addEventListener('message', (event: MessageEvent<HostMessage>) => {
@@ -212,6 +323,14 @@ window.addEventListener('message', (event: MessageEvent<HostMessage>) => {
         showBanner(`Could not update the item: ${(msg.message ?? 'unknown error').replace(/\.$/, '')}. The change was reverted.`, 8000);
       }
       break;
+    case 'addResult':
+      if (ui.adding?.requestId !== msg.requestId) break;
+      if (msg.ok) ui.adding = undefined;
+      else {
+        ui.adding = { key: ui.adding.key };
+        showBanner(`Could not add the item: ${(msg.message ?? 'unknown error').replace(/\.$/, '')}.`, 8000);
+      }
+      break;
     case 'env':
       ui.prExtension = msg.prExtension;
       break;
@@ -236,7 +355,15 @@ window.addEventListener('message', (event: MessageEvent<HostMessage>) => {
 
 // ---- rendering -----------------------------------------------------------------------------
 
+let renderPending = false;
+
 function render(): void {
+  // Re-rendering would destroy the bar being dragged; render once the drag ends.
+  if (isBarDragging()) {
+    renderPending = true;
+    return;
+  }
+  renderPending = false;
   const scroll = app.querySelector('.board')?.scrollLeft ?? 0;
   // Each column scrolls on its own; refreshes must not jump back to the top.
   const columnScroll = new Map<string, number>();
@@ -276,7 +403,10 @@ function render(): void {
       layout.scrollLeft = Math.max(0, Number(layout.dataset.todayX ?? 0) - layout.clientWidth / 3);
     }
   }
-  if (focusKey) {
+  if (ui.editing?.focus) {
+    ui.editing.focus = false;
+    app.querySelector<HTMLElement>('.cell-editor')?.focus();
+  } else if (focusKey) {
     const el = [...app.querySelectorAll<HTMLInputElement>('[data-focus-key]')].find((e) => e.dataset.focusKey === focusKey);
     el?.focus();
     if (el && selection && selection.start !== null) el.setSelectionRange(selection.start, selection.end ?? selection.start);
@@ -375,30 +505,72 @@ function layoutView(board: BoardState, visible: ProjectItem[]): HTMLElement {
   const view = currentView(board);
   if (board.items.length === 0 || view?.layout === 'board' || !view) return boardView(board, visible);
   const selectedId = ui.detail?.itemId;
+  const groupField = effectiveGroupField(board, view);
   if (view.layout === 'table') {
     return tableView({
       items: visible,
       fields: board.project.fields,
       view,
       ...withValue('sort', effectiveSort(view)),
-      ...withValue('groupField', effectiveGroupField(board, view)),
+      ...withValue('groupField', groupField),
       ...withValue('selectedId', selectedId),
+      ...withValue('editing', ui.editing),
+      ...withValue('adding', ui.adding),
+      collapsed: collapsedGroups(view),
+      root: app,
       onSort: (fieldId) => toggleSort(view, fieldId),
       onOpen: openDetail,
       onOpenExternal: (url) => send({ type: 'openExternal', url }),
+      onToggleGroup: (groupId) => toggleGroup(view, groupId),
+      onStartEdit: (itemId, fieldId) => {
+        ui.editing = { itemId, fieldId, focus: true };
+        render();
+      },
+      onStopEdit: () => {
+        if (!ui.editing) return;
+        ui.editing = undefined;
+        // Blur fires while the editor is being replaced: render after the current event.
+        setTimeout(render, 0);
+      },
+      onEdit: (itemId, field, input) => {
+        const item = board.items.find((i) => i.id === itemId);
+        ui.editing = undefined;
+        if (item && !isSameValue(item.fieldValues[field.id], input)) editField(itemId, field, input);
+        else render();
+      },
+      onDrop: (itemId, groupId, next) => {
+        const input = groupField && groupId !== undefined ? groupInput(groupField, groupId) : undefined;
+        dropItem(itemId, groupField && input !== undefined ? { field: groupField, input } : {}, next);
+      },
+      onStartAdd: startAdd,
+      onCancelAdd: cancelAdd,
+      onAdd: (key, title, groupId) => {
+        const input = groupField && groupId !== undefined ? groupInput(groupField, groupId) : undefined;
+        addDraft(key, title, groupField, input);
+      },
     });
   }
+  const source = dateSource(board, view);
   return roadmapView({
     items: visible,
     fields: board.project.fields,
     view,
-    ...withValue('source', dateSource(board, view)),
+    ...withValue('source', source),
     ...withValue('sort', effectiveSort(view)),
-    ...withValue('groupField', effectiveGroupField(board, view)),
+    ...withValue('groupField', groupField),
     zoom: prefsFor(view.id).zoom ?? 'month',
     today: today(),
     ...withValue('selectedId', selectedId),
+    collapsed: collapsedGroups(view),
+    draggable: canDragDates(board.project.fields, source),
     onOpen: openDetail,
+    onToggleGroup: (groupId) => toggleGroup(view, groupId),
+    onSpan: (itemId, span) => {
+      if (source) setSpan(itemId, span, source);
+    },
+    onSettled: () => {
+      if (renderPending) render();
+    },
   });
 }
 
@@ -517,8 +689,8 @@ function select(label: string, options: { value: string; label: string }[], valu
 
 function boardView(board: BoardState, visible: ProjectItem[]): HTMLElement {
   const { project } = board;
-  const currentView = project.views.find((v) => v.id === board.viewId);
-  const groupField = resolveGroupField(project.fields, currentView, board.groupFieldId);
+  const view = currentView(board);
+  const groupField = resolveGroupField(project.fields, view, board.groupFieldId);
   if (board.items.length === 0) {
     return h(
       'div',
@@ -528,8 +700,16 @@ function boardView(board: BoardState, visible: ProjectItem[]): HTMLElement {
     );
   }
   const fields = cardFields(project.fields, groupField?.id);
-  const columns = buildColumns(visible, groupField, { alwaysIncludeNone: !!groupField });
-  const ctx: CardContext = { fields, columns, movable: !!groupField };
+  // A board sorted on GitHub shows its cards in that order and has no manual order.
+  const sort = view?.sortBy;
+  const columns = buildColumns(sortItems(visible, sort, project.fields), groupField, { alwaysIncludeNone: !!groupField });
+  const ctx: CardContext = {
+    fields,
+    columns,
+    movable: !!groupField,
+    orderable: !sort?.length,
+    numberFields: project.fields.filter((f) => f.kind === 'number'),
+  };
   return h('main', { class: 'board', 'aria-label': `Board grouped by ${groupField?.name ?? 'nothing'}` }, columns.map((c) => columnView(c, ctx)));
 }
 
@@ -538,16 +718,25 @@ interface CardContext {
   columns: Column[];
   /** False when the board has no single-select field to move along. */
   movable: boolean;
+  /** Cards keep the project's manual order (the view isn't sorted), so they can be reordered. */
+  orderable: boolean;
+  /** Number fields summed in column headers. */
+  numberFields: ProjectField[];
 }
 
 function columnView(column: Column, ctx: CardContext): HTMLElement {
   const dot = h('span', { class: `dot color-${column.option?.color ?? 'none'}`, 'aria-hidden': 'true' });
+  const sums = ctx.numberFields.flatMap((f) => {
+    const sum = fieldSum(column.items, f);
+    return sum === undefined ? [] : [`${f.name}: ${sum}`];
+  });
   const header = h(
     'header',
     { class: 'column-header' },
     dot,
     h('h2', {}, column.name),
     h('span', { class: 'count', 'aria-label': `${column.items.length} items` }, String(column.items.length)),
+    sums.length ? h('span', { class: 'muted field-sums', title: 'Sum of number fields' }, sums.join(' · ')) : null,
   );
   const desc = column.option?.description ? h('p', { class: 'column-desc' }, column.option.description) : null;
   const list =
@@ -565,27 +754,70 @@ function columnView(column: Column, ctx: CardContext): HTMLElement {
     header,
     desc,
     list,
+    addCard(column),
   );
-  if (ctx.movable) {
+  if (ctx.movable || ctx.orderable) {
     section.addEventListener('dragover', (e) => {
-      if (!e.dataTransfer?.types.includes(DRAG_TYPE)) return;
+      if (!isItemDrag(e)) return;
+      const card = itemUnder(e);
+      if (!ctx.movable && !card) return;
       e.preventDefault();
-      e.dataTransfer.dropEffect = 'move';
-      section.classList.add('drop-target');
+      if (e.dataTransfer) e.dataTransfer.dropEffect = 'move';
+      clearDropMarks(app);
+      if (ctx.movable) section.classList.add('drop-target');
+      if (card && ctx.orderable) markDropPlace(e, card);
     });
     section.addEventListener('dragleave', (e) => {
-      if (!section.contains(e.relatedTarget as Node | null)) section.classList.remove('drop-target');
+      if (!section.contains(e.relatedTarget as Node | null)) clearDropMarks(section);
     });
     section.addEventListener('drop', (e) => {
+      if (!isItemDrag(e)) return;
       e.preventDefault();
-      section.classList.remove('drop-target');
+      const card = itemUnder(e);
+      const place = card ? markDropPlace(e, card) : undefined;
+      clearDropMarks(app);
       // The re-render replaces the dragged card, so its 'dragend' may never reach us.
       app.classList.remove('is-dragging');
       const itemId = e.dataTransfer?.getData(DRAG_TYPE);
-      if (itemId) moveItem(itemId, column.id);
+      if (!itemId) return;
+      const next = card?.dataset.itemId && place && ctx.orderable ? { targetId: card.dataset.itemId, place } : undefined;
+      if (ctx.movable) moveItem(itemId, column.id, next);
+      else if (next) dropItem(itemId, {}, next);
     });
   }
   return section;
+}
+
+/** "+ Add item" at the bottom of a column: a draft issue with that column's value. */
+function addCard(column: Column): HTMLElement {
+  const key = `board:${column.id}`;
+  const adding = ui.adding?.key === key ? ui.adding : undefined;
+  if (!adding) {
+    const b = h('button', { type: 'button', class: 'add-button' }, '+ Add item');
+    b.addEventListener('click', () => startAdd(key));
+    return h('div', { class: 'column-add' }, b);
+  }
+  const input = h('input', {
+    type: 'text',
+    class: 'add-input',
+    placeholder: 'Draft title, then Enter',
+    'aria-label': `Title of the new draft in ${column.name}`,
+    'data-focus-key': `add-${key}`,
+    disabled: !!adding.pending,
+  });
+  input.addEventListener('keydown', (e) => {
+    e.stopPropagation();
+    if (e.key === 'Escape') cancelAdd();
+    if (e.key !== 'Enter' || !input.value.trim()) return;
+    const board = ui.board;
+    const field = board ? resolveGroupField(board.project.fields, currentView(board), board.groupFieldId) : undefined;
+    const value: FieldInput | undefined = field && column.id !== NO_VALUE_COLUMN ? { kind: 'singleSelect', optionId: column.id } : undefined;
+    addDraft(key, input.value.trim(), field, value);
+  });
+  input.addEventListener('blur', () => {
+    if (!input.value.trim()) cancelAdd();
+  });
+  return h('div', { class: 'column-add' }, input, adding.pending ? h('span', { class: 'muted' }, 'Adding…') : null);
 }
 
 /** Move menus live inside scrolling columns, so they are placed with fixed coordinates. */
@@ -650,8 +882,8 @@ function cardView(item: ProjectItem, column: Column, ctx: CardContext): HTMLElem
       tabindex: 0,
       'data-item-id': item.id,
       'aria-label': item.title,
-      draggable: ctx.movable ? 'true' : undefined,
-      'aria-keyshortcuts': ctx.movable ? 'Alt+ArrowLeft Alt+ArrowRight' : undefined,
+      'aria-keyshortcuts':
+        [ctx.movable ? 'Alt+ArrowLeft Alt+ArrowRight' : '', ctx.orderable ? 'Alt+ArrowUp Alt+ArrowDown' : ''].join(' ').trim() || undefined,
     },
     meta,
     h('div', { class: 'card-title' }, item.title),
@@ -668,27 +900,23 @@ function cardView(item: ProjectItem, column: Column, ctx: CardContext): HTMLElem
     if (e.key === 'Enter' && e.target === card) openDetail(item.id);
   });
   if (ui.detail?.itemId === item.id) card.classList.add('selected');
-  if (ctx.movable) {
-    // Don't re-render during a drag: it would destroy the element being dragged.
-    card.addEventListener('dragstart', (e) => {
-      e.dataTransfer?.setData(DRAG_TYPE, item.id);
-      if (e.dataTransfer) e.dataTransfer.effectAllowed = 'move';
-      card.classList.add('dragging');
-      app.classList.add('is-dragging');
-    });
-    card.addEventListener('dragend', () => {
-      card.classList.remove('dragging');
-      app.classList.remove('is-dragging');
-      app.querySelectorAll('.drop-target').forEach((el) => el.classList.remove('drop-target'));
-    });
-    card.addEventListener('keydown', (e) => {
-      if (!e.altKey || (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight')) return;
+  if (ctx.movable || ctx.orderable) makeDraggable(card, item.id, app);
+  card.addEventListener('keydown', (e) => {
+    if (!e.altKey || e.target !== card) return;
+    if (ctx.movable && (e.key === 'ArrowLeft' || e.key === 'ArrowRight')) {
       e.preventDefault();
       const index = ctx.columns.findIndex((c) => c.id === column.id);
       const target = ctx.columns[index + (e.key === 'ArrowLeft' ? -1 : 1)];
       if (target) moveItem(item.id, target.id);
-    });
-  }
+    }
+    // Alt+↑/↓ reorders the card inside its column.
+    if (ctx.orderable && (e.key === 'ArrowUp' || e.key === 'ArrowDown')) {
+      e.preventDefault();
+      const index = column.items.findIndex((i) => i.id === item.id);
+      const neighbour = column.items[index + (e.key === 'ArrowUp' ? -1 : 1)];
+      if (neighbour) dropItem(item.id, {}, { targetId: neighbour.id, place: e.key === 'ArrowUp' ? 'before' : 'after' });
+    }
+  });
   return card;
 }
 

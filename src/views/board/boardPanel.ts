@@ -2,7 +2,7 @@ import * as vscode from 'vscode';
 import type { ProjectsApi } from '../../api/projectsApi';
 import { defaultView } from '../../model/board';
 import type { FieldInput } from '../../model/edits';
-import { setItemValue, toFieldValue, validateInput } from '../../model/edits';
+import { moveItemAfter, setItemValue, toFieldValue, validateInput } from '../../model/edits';
 import type { BoardFilter } from '../../model/filter';
 import { normalizeFilter } from '../../model/filter';
 import type { ProjectSummary } from '../../model/types';
@@ -165,6 +165,54 @@ export class BoardPanel implements vscode.Disposable {
     }
   }
 
+  /** Moves an item in the project order (the webview already shows it there). */
+  async setPosition(requestId: string, itemId: string, afterId: string | undefined): Promise<boolean> {
+    const state = this.state;
+    const item = state?.items.find((i) => i.id === itemId);
+    if (!state || !item || (afterId !== undefined && !state.items.some((i) => i.id === afterId))) {
+      this.post({ type: 'editResult', requestId, ok: false, message: 'The board changed; refresh and try again.' });
+      return false;
+    }
+    try {
+      await this.deps.getApi().setItemPosition(state.project.id, itemId, afterId);
+      if (this.state) this.state = { ...this.state, items: moveItemAfter(this.state.items, itemId, afterId).items };
+      this.post({ type: 'editResult', requestId, ok: true });
+      return true;
+    } catch (err) {
+      const message = reportError(`Moving ${item.title}`, err);
+      this.post({ type: 'editResult', requestId, ok: false, message });
+      void vscode.window.showWarningMessage(`Could not move "${item.title}": ${message} The change was reverted.`);
+      return false;
+    }
+  }
+
+  /**
+   * Adds a draft issue, sets the field of the column or group it was added to, and reloads so
+   * the webview gets the new item.
+   */
+  async addDraft(requestId: string, title: string, fieldId?: string, input?: FieldInput): Promise<boolean> {
+    const state = this.state;
+    const field = fieldId ? state?.project.fields.find((f) => f.id === fieldId) : undefined;
+    const invalid = !state ? 'The board is still loading.' : fieldId && (!field || input === undefined) ? 'Unknown field.' : field && input !== undefined ? validateInput(field, input) : undefined;
+    if (invalid || !state) {
+      this.post({ type: 'addResult', requestId, ok: false, message: invalid });
+      return false;
+    }
+    const api = this.deps.getApi();
+    try {
+      const itemId = await api.addDraftIssue(state.project.id, title);
+      if (field && input !== undefined && input !== null) await api.setFieldValue(state.project.id, itemId, field.id, input);
+      this.post({ type: 'addResult', requestId, ok: true });
+      await this.refresh();
+      return true;
+    } catch (err) {
+      const message = reportError(`Adding "${title}"`, err);
+      this.post({ type: 'addResult', requestId, ok: false, message });
+      void vscode.window.showWarningMessage(`Could not add "${title}": ${message}`);
+      return false;
+    }
+  }
+
   async loadDetail(itemId: string): Promise<void> {
     try {
       const detail = await this.deps.getApi().getItemDetail(itemId);
@@ -242,6 +290,12 @@ export class BoardPanel implements vscode.Disposable {
         return;
       case 'setField':
         void this.setField(msg.requestId, msg.itemId, msg.fieldId, msg.input);
+        return;
+      case 'setPosition':
+        void this.setPosition(msg.requestId, msg.itemId, msg.afterId);
+        return;
+      case 'addDraft':
+        void this.addDraft(msg.requestId, msg.title, msg.fieldId, msg.input);
         return;
       case 'openDetail':
         void this.loadDetail(msg.itemId);

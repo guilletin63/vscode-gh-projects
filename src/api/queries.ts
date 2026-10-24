@@ -201,6 +201,22 @@ export const CLEAR_FIELD_VALUE_MUTATION = /* GraphQL */ `
   }
 `;
 
+export const UPDATE_ITEM_POSITION_MUTATION = /* GraphQL */ `
+  mutation UpdateItemPosition($projectId: ID!, $itemId: ID!, $afterId: ID) {
+    updateProjectV2ItemPosition(input: { projectId: $projectId, itemId: $itemId, afterId: $afterId }) {
+      items(first: 1) { totalCount }
+    }
+  }
+`;
+
+export const ADD_DRAFT_ISSUE_MUTATION = /* GraphQL */ `
+  mutation AddDraftIssue($projectId: ID!, $title: String!) {
+    addProjectV2DraftIssue(input: { projectId: $projectId, title: $title }) {
+      projectItem { id }
+    }
+  }
+`;
+
 export const ITEM_DETAIL_QUERY = /* GraphQL */ `
   query ItemDetail($itemId: ID!) {
     node(id: $itemId) {

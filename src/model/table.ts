@@ -1,3 +1,4 @@
+import type { FieldInput } from './edits';
 import type { ProjectField, ProjectItem, ProjectView, SelectOption, ViewSort } from './types';
 
 /** What a table cell shows: one of GitHub's built-in fields, or a custom field value. */
@@ -213,4 +214,44 @@ export function groupItems(items: ProjectItem[], field: ProjectField | undefined
   const result = [...groups.values(), ...rest];
   if (none.length > 0) result.push({ id: NO_VALUE_GROUP, name: `No ${field.name}`, items: none });
   return result.filter((g) => g.items.length > 0);
+}
+
+/** Custom fields the extension can write. */
+export function isEditableField(field: ProjectField | undefined): field is ProjectField {
+  return !!field && field.kind !== 'builtin';
+}
+
+/**
+ * The value an item gets when dropped on a group of `field`; null clears it ("No <field>").
+ * Undefined when the group can't be written (built-in fields such as Assignees).
+ */
+export function groupInput(field: ProjectField, groupId: string): FieldInput | undefined {
+  if (!isEditableField(field)) return undefined;
+  if (groupId === NO_VALUE_GROUP) return null;
+  switch (field.kind) {
+    case 'singleSelect':
+      return field.options?.some((o) => o.id === groupId) ? { kind: 'singleSelect', optionId: groupId } : undefined;
+    case 'iteration':
+      return field.iterations?.some((i) => i.id === groupId) ? { kind: 'iteration', iterationId: groupId } : undefined;
+    case 'number': {
+      const n = Number(groupId);
+      return Number.isFinite(n) ? { kind: 'number', number: n } : undefined;
+    }
+    case 'date':
+      return /^\d{4}-\d{2}-\d{2}$/.test(groupId) ? { kind: 'date', date: groupId } : undefined;
+    case 'text':
+      return { kind: 'text', text: groupId };
+    default:
+      return undefined;
+  }
+}
+
+/** Sum of a number field over items, or undefined when none has a value. */
+export function fieldSum(items: ProjectItem[], field: ProjectField): number | undefined {
+  let sum: number | undefined;
+  for (const item of items) {
+    const v = item.fieldValues[field.id];
+    if (v?.kind === 'number') sum = (sum ?? 0) + v.number;
+  }
+  return sum === undefined ? undefined : Math.round(sum * 100) / 100;
 }

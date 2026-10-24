@@ -1,5 +1,18 @@
 # Changelog
 
+## 1.2.0
+
+- **Drag rows between table groups** to set the group's value (single-select, iteration, number,
+  date or text), or press <kbd>Alt</kbd>+<kbd>↑</kbd>/<kbd>↓</kbd>.
+- **Reorder** cards inside a board column and rows of an unsorted table, by dragging or with
+  <kbd>Alt</kbd>+<kbd>↑</kbd>/<kbd>↓</kbd>. Boards sorted on GitHub now show that order.
+- **Edit table cells in place**: click a single-select, iteration, text, number or date cell.
+- **Roadmap**: drag a bar to move its dates, or its ends to change the start or target date
+  (date fields), also with <kbd>Alt</kbd>+<kbd>←</kbd>/<kbd>→</kbd>.
+- **Add items**: "+ Add item" in board columns and table groups creates a draft issue with that
+  column's or group's value.
+- Column and group headers show the sum of number fields; table and roadmap groups can be folded.
+
 ## 1.1.0
 
 - **Table views** open as tables: the fields the view shows on GitHub, in the same order, with

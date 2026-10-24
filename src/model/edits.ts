@@ -48,6 +48,23 @@ export function toFieldValue(field: ProjectField, input: FieldInput): FieldValue
   }
 }
 
+/** Whether writing `input` would leave `value` as it is. */
+export function isSameValue(value: FieldValue | undefined, input: FieldInput): boolean {
+  if (input === null || !value) return input === null && !value;
+  switch (input.kind) {
+    case 'singleSelect':
+      return value.kind === 'singleSelect' && value.optionId === input.optionId;
+    case 'iteration':
+      return value.kind === 'iteration' && value.iterationId === input.iterationId;
+    case 'text':
+      return value.kind === 'text' && value.text === input.text;
+    case 'number':
+      return value.kind === 'number' && value.number === input.number;
+    case 'date':
+      return value.kind === 'date' && value.date === input.date;
+  }
+}
+
 /** Checks an input against the field (kind, known option/iteration, valid number/date). */
 export function validateInput(field: ProjectField, input: FieldInput): string | undefined {
   if (input === null) return undefined;
@@ -87,14 +104,51 @@ export function setItemValue(items: ProjectItem[], itemId: string, fieldId: stri
 }
 
 /**
- * Optimistic edits that are still waiting for GitHub. Each one remembers the previous value so
- * a failure puts the card back exactly where it was, even if other edits landed meanwhile.
+ * Moves an item right after `afterId` (undefined = to the top), like GitHub's
+ * updateProjectV2ItemPosition. Returns the item that preceded it, to undo the move.
+ */
+export function moveItemAfter(
+  items: ProjectItem[],
+  itemId: string,
+  afterId: string | undefined,
+): { items: ProjectItem[]; previousAfterId: string | undefined } {
+  const index = items.findIndex((i) => i.id === itemId);
+  if (index < 0 || afterId === itemId) return { items, previousAfterId: undefined };
+  const item = items[index]!;
+  const previousAfterId = index > 0 ? items[index - 1]?.id : undefined;
+  const rest = items.filter((i) => i.id !== itemId);
+  const at = afterId === undefined ? 0 : rest.findIndex((i) => i.id === afterId) + 1;
+  // An unknown afterId (item gone after a refresh) leaves the order alone.
+  if (afterId !== undefined && at === 0) return { items, previousAfterId };
+  return { items: [...rest.slice(0, at), item, ...rest.slice(at)], previousAfterId };
+}
+
+/**
+ * The `afterId` that puts `itemId` just before or after `targetId` in the project order;
+ * undefined means "to the top", null means there is nothing to do.
+ */
+export function afterIdFor(items: ProjectItem[], itemId: string, targetId: string, place: 'before' | 'after'): string | undefined | null {
+  if (itemId === targetId) return null;
+  const rest = items.filter((i) => i.id !== itemId);
+  const target = rest.findIndex((i) => i.id === targetId);
+  if (target < 0) return null;
+  const afterId = place === 'after' ? targetId : rest[target - 1]?.id;
+  const current = items.findIndex((i) => i.id === itemId);
+  const currentAfter = current > 0 ? items[current - 1]?.id : undefined;
+  return current >= 0 && currentAfter === afterId ? null : afterId;
+}
+
+type Pending =
+  | { kind: 'field'; itemId: string; field: ProjectField; input: FieldInput; previous: FieldValue | undefined }
+  | { kind: 'position'; itemId: string; afterId: string | undefined; previousAfterId: string | undefined };
+
+/**
+ * Optimistic edits that are still waiting for GitHub: field values and positions. Each one
+ * remembers what it replaced so a failure puts the item back exactly where it was, even if
+ * other edits landed meanwhile.
  */
 export class PendingEdits {
-  private readonly pending = new Map<
-    string,
-    { itemId: string; field: ProjectField; input: FieldInput; previous: FieldValue | undefined }
-  >();
+  private readonly pending = new Map<string, Pending>();
   private seq = 0;
 
   apply(
@@ -105,7 +159,15 @@ export class PendingEdits {
   ): { requestId: string; items: ProjectItem[] } {
     const requestId = `edit-${++this.seq}`;
     const { items: next, previous } = setItemValue(items, itemId, field.id, toFieldValue(field, input));
-    this.pending.set(requestId, { itemId, field, input, previous });
+    this.pending.set(requestId, { kind: 'field', itemId, field, input, previous });
+    return { requestId, items: next };
+  }
+
+  /** Moves an item in the project order. */
+  applyPosition(items: ProjectItem[], itemId: string, afterId: string | undefined): { requestId: string; items: ProjectItem[] } {
+    const requestId = `edit-${++this.seq}`;
+    const { items: next, previousAfterId } = moveItemAfter(items, itemId, afterId);
+    this.pending.set(requestId, { kind: 'position', itemId, afterId, previousAfterId });
     return { requestId, items: next };
   }
 
@@ -114,19 +176,24 @@ export class PendingEdits {
     this.pending.delete(requestId);
   }
 
-  /** GitHub rejected the edit: restore the previous value. */
+  /** GitHub rejected the edit: restore the previous value or position. */
   revert(items: ProjectItem[], requestId: string): ProjectItem[] {
     const p = this.pending.get(requestId);
     if (!p) return items;
     this.pending.delete(requestId);
-    return setItemValue(items, p.itemId, p.field.id, p.previous).items;
+    return p.kind === 'field'
+      ? setItemValue(items, p.itemId, p.field.id, p.previous).items
+      : moveItemAfter(items, p.itemId, p.previousAfterId).items;
   }
 
   /** Re-applies in-flight edits on top of freshly loaded items (a refresh during a move). */
   reapply(items: ProjectItem[]): ProjectItem[] {
     let next = items;
     for (const p of this.pending.values()) {
-      next = setItemValue(next, p.itemId, p.field.id, toFieldValue(p.field, p.input)).items;
+      next =
+        p.kind === 'field'
+          ? setItemValue(next, p.itemId, p.field.id, toFieldValue(p.field, p.input)).items
+          : moveItemAfter(next, p.itemId, p.afterId).items;
     }
     return next;
   }

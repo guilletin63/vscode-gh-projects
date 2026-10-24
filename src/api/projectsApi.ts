@@ -7,6 +7,7 @@ import { GraphQLError } from './client';
 import { mapItemDetail, mapItems, mapOwnerLookup, mapProjectDetails, mapProjects, mapViewer, mapViews } from './mappers';
 import { paginate } from './paginate';
 import {
+  ADD_DRAFT_ISSUE_MUTATION,
   CLEAR_FIELD_VALUE_MUTATION,
   ITEM_DETAIL_QUERY,
   OWNER_LOOKUP_QUERY,
@@ -14,6 +15,7 @@ import {
   PROJECT_ITEMS_QUERY,
   PROJECTS_QUERY,
   UPDATE_FIELD_VALUE_MUTATION,
+  UPDATE_ITEM_POSITION_MUTATION,
   VIEWER_ONLY_QUERY,
   VIEWER_QUERY,
   VIEWS_QUERY,
@@ -46,6 +48,10 @@ export interface ProjectsApi {
   listItems(project: ProjectDetails, onProgress?: (p: LoadProgress) => void): Promise<ProjectItem[]>;
   /** Writes (or clears, with null) one field of one item. Needs the `project` scope. */
   setFieldValue(projectId: string, itemId: string, fieldId: string, input: FieldInput): Promise<void>;
+  /** Moves an item right after `afterId`, or to the top without it. Needs the `project` scope. */
+  setItemPosition(projectId: string, itemId: string, afterId: string | undefined): Promise<void>;
+  /** Adds a draft issue and returns its project item id. Needs the `project` scope. */
+  addDraftIssue(projectId: string, title: string): Promise<string>;
   /** Body and metadata of one item for the detail panel. */
   getItemDetail(itemId: string): Promise<ItemDetail>;
 }
@@ -120,6 +126,21 @@ export class GitHubProjectsApi implements ProjectsApi {
         { write: true },
       );
     }
+  }
+
+  async setItemPosition(projectId: string, itemId: string, afterId: string | undefined): Promise<void> {
+    await this.client.request(UPDATE_ITEM_POSITION_MUTATION, { projectId, itemId, afterId: afterId ?? null }, { write: true });
+  }
+
+  async addDraftIssue(projectId: string, title: string): Promise<string> {
+    const r = await this.client.request<{ addProjectV2DraftIssue: { projectItem: { id: string } | null } | null }>(
+      ADD_DRAFT_ISSUE_MUTATION,
+      { projectId, title },
+      { write: true },
+    );
+    const id = r.addProjectV2DraftIssue?.projectItem?.id;
+    if (!id) throw new Error('GitHub did not return the new item.');
+    return id;
   }
 
   async getItemDetail(itemId: string): Promise<ItemDetail> {

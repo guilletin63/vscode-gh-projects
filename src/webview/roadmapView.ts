@@ -1,7 +1,7 @@
 // Roadmap layout: items as bars on a timeline, placed by a date or iteration field.
 import { resolveGroupField } from '../model/board';
-import type { DateSource, Span } from '../model/roadmap';
-import { buildTimeline, isoDay, itemSpan, iterationSpans, sortBySpan } from '../model/roadmap';
+import type { BarDrag, DateSource, Span } from '../model/roadmap';
+import { buildTimeline, dragSpan, isoDay, itemSpan, iterationSpans, sortBySpan } from '../model/roadmap';
 import { groupItems, sortItems } from '../model/table';
 import type { ProjectField, ProjectItem, ProjectView, ViewSort } from '../model/types';
 import { h } from './dom';
@@ -23,7 +23,23 @@ export interface RoadmapProps {
   /** Today as a day number (local calendar day). */
   today: number;
   selectedId?: string;
+  /** Groups the user folded. */
+  collapsed: ReadonlySet<string>;
+  /** Bars can be moved and resized (both ends are date fields). */
+  draggable: boolean;
   onOpen: (itemId: string) => void;
+  onToggleGroup: (groupId: string) => void;
+  /** New span for an item, after a drag or a keyboard move. */
+  onSpan: (itemId: string, span: Span) => void;
+  /** A drag ended without a change (the panel may re-render again). */
+  onSettled: () => void;
+}
+
+let barDrag: { pointerId: number } | undefined;
+
+/** True while a bar is being dragged; the panel must not re-render meanwhile. */
+export function isBarDragging(): boolean {
+  return barDrag !== undefined;
 }
 
 /** Bars narrower than this get their title next to them instead of inside. */
@@ -93,21 +109,20 @@ export function roadmapView(props: RoadmapProps): HTMLElement {
   const groups = props.groupField ? groupItems(rows, props.groupField) : [{ id: '', name: '', items: rows }];
   const body = h('div', { class: 'roadmap-body', role: 'list' });
   for (const g of groups) {
+    const collapsed = !!props.groupField && props.collapsed.has(g.id);
     if (props.groupField) {
-      body.append(
-        h(
-          'div',
-          { class: 'roadmap-group' },
-          h(
-            'div',
-            { class: 'roadmap-title' },
-            h('span', { class: `dot color-${'option' in g && g.option ? g.option.color : 'none'}`, 'aria-hidden': 'true' }),
-            h('span', { class: 'group-name' }, g.name),
-            h('span', { class: 'count' }, String(g.items.length)),
-          ),
-        ),
+      const toggle = h(
+        'button',
+        { type: 'button', class: 'group-toggle', 'aria-expanded': String(!collapsed), title: collapsed ? 'Expand group' : 'Collapse group' },
+        h('span', { class: 'chevron', 'aria-hidden': 'true' }, collapsed ? '▸' : '▾'),
+        h('span', { class: `dot color-${'option' in g && g.option ? g.option.color : 'none'}`, 'aria-hidden': 'true' }),
+        h('span', { class: 'group-name' }, g.name),
+        h('span', { class: 'count' }, String(g.items.length)),
       );
+      toggle.addEventListener('click', () => props.onToggleGroup(g.id));
+      body.append(h('div', { class: 'roadmap-group' }, h('div', { class: 'roadmap-title' }, toggle)));
     }
+    if (collapsed) continue;
     for (const item of g.items) body.append(row(item, spans.get(item.id), { props, width, x, px, status }));
   }
   // Month separators and today's line run through every row.
@@ -143,6 +158,7 @@ function row(item: ProjectItem, span: Span | undefined, ctx: RowContext): HTMLEl
   );
   const track = sized(h('div', { class: 'roadmap-track' }), ctx.width);
   const dates = span ? `${formatDate(isoDay(span.start))} – ${formatDate(isoDay(span.end))}` : 'No dates';
+  let dragged = false;
   if (span) {
     const value = ctx.status ? item.fieldValues[ctx.status.id] : undefined;
     const color = value?.kind === 'singleSelect' ? (ctx.status?.options?.find((o) => o.id === value.optionId)?.color ?? 'GRAY') : 'GRAY';
@@ -156,6 +172,45 @@ function row(item: ProjectItem, span: Span | undefined, ctx: RowContext): HTMLEl
     }
     track.append(bar);
     if (barWidth < MIN_LABELLED_BAR) track.append(label);
+    if (props.draggable) {
+      bar.classList.add('draggable');
+      bar.append(h('span', { class: 'bar-handle start', 'aria-hidden': 'true' }), h('span', { class: 'bar-handle end', 'aria-hidden': 'true' }));
+      bar.addEventListener('pointerdown', (e) => {
+        if (e.button !== 0) return;
+        const handle = (e.target as Element).closest('.bar-handle');
+        const mode: BarDrag = handle?.classList.contains('start') ? 'start' : handle?.classList.contains('end') ? 'end' : 'move';
+        const startX = e.clientX;
+        let days = 0;
+        barDrag = { pointerId: e.pointerId };
+        try {
+          bar.setPointerCapture(e.pointerId);
+        } catch {
+          // Pointer already released (e.g. a very short tap): the drag still ends on pointerup.
+        }
+        bar.classList.add('dragging');
+        const move = (ev: PointerEvent) => {
+          days = Math.round((ev.clientX - startX) / ctx.px);
+          const next = dragSpan(span, mode, days);
+          bar.style.setProperty('left', `${ctx.x(next.start)}px`);
+          bar.style.setProperty('width', `${Math.max(ctx.px, (next.end - next.start + 1) * ctx.px)}px`);
+          bar.title = `${formatDate(isoDay(next.start))} – ${formatDate(isoDay(next.end))}`;
+          if (days !== 0) dragged = true;
+        };
+        const end = () => {
+          bar.removeEventListener('pointermove', move);
+          bar.removeEventListener('pointerup', end);
+          bar.removeEventListener('pointercancel', end);
+          bar.classList.remove('dragging');
+          barDrag = undefined;
+          if (days !== 0) props.onSpan(item.id, dragSpan(span, mode, days));
+          else props.onSettled();
+        };
+        bar.addEventListener('pointermove', move);
+        bar.addEventListener('pointerup', end);
+        bar.addEventListener('pointercancel', end);
+        e.preventDefault();
+      });
+    }
   } else {
     title.append(h('span', { class: 'muted no-dates' }, 'No dates'));
   }
@@ -171,10 +226,23 @@ function row(item: ProjectItem, span: Span | undefined, ctx: RowContext): HTMLEl
     title,
     track,
   );
-  el.addEventListener('click', () => props.onOpen(item.id));
-  el.addEventListener('keydown', (e) => {
-    if (e.key === 'Enter' && e.target === el) props.onOpen(item.id);
+  el.addEventListener('click', () => {
+    // The click that ends a drag is not a request to open the item.
+    if (dragged) dragged = false;
+    else props.onOpen(item.id);
   });
+  el.addEventListener('keydown', (e) => {
+    if (e.target !== el) return;
+    if (e.key === 'Enter') props.onOpen(item.id);
+    // Alt+←/→ moves the dates a day; with Shift it changes the target date only.
+    if (props.draggable && e.altKey && (e.key === 'ArrowLeft' || e.key === 'ArrowRight')) {
+      e.preventDefault();
+      const days = e.key === 'ArrowLeft' ? -1 : 1;
+      if (span) props.onSpan(item.id, dragSpan(span, e.shiftKey ? 'end' : 'move', days));
+      else props.onSpan(item.id, { start: props.today, end: props.today });
+    }
+  });
+  if (props.draggable) el.setAttribute('aria-keyshortcuts', 'Alt+ArrowLeft Alt+ArrowRight Shift+Alt+ArrowLeft Shift+Alt+ArrowRight');
   return el;
 }
 

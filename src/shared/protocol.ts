@@ -24,8 +24,10 @@ export type HostMessage =
   | { type: 'state'; state: BoardState }
   | { type: 'error'; message: string }
   | { type: 'rateLimit'; waitMs: number; reason: string }
-  /** Outcome of a `setField` request; on failure the webview rolls the edit back. */
+  /** Outcome of a `setField` / `setPosition` request; on failure the webview rolls the edit back. */
   | { type: 'editResult'; requestId: string; ok: boolean; message?: string }
+  /** Outcome of an `addDraft` request (the new item arrives with the next `state`). */
+  | { type: 'addResult'; requestId: string; ok: boolean; message?: string }
   | { type: 'detail'; itemId: string; detail: ItemDetail }
   | { type: 'detailError'; itemId: string; message: string }
   /** Host capabilities that change what the webview offers. */
@@ -41,6 +43,10 @@ export type WebviewMessage =
   | { type: 'setFilter'; filter: BoardFilter }
   /** Optimistic edit already applied in the webview (moving a card = setting the column field). */
   | { type: 'setField'; requestId: string; itemId: string; fieldId: string; input: FieldInput }
+  /** Optimistic move in the project order: right after `afterId`, or to the top. */
+  | { type: 'setPosition'; requestId: string; itemId: string; afterId?: string }
+  /** New draft issue, optionally with a field value (the column or group it was added to). */
+  | { type: 'addDraft'; requestId: string; title: string; fieldId?: string; input?: FieldInput }
   | { type: 'openDetail'; itemId: string }
   | { type: 'copyLink'; url: string }
   /** Open the issue/PR in the GitHub Pull Requests extension. */
@@ -75,6 +81,17 @@ export function parseWebviewMessage(raw: unknown): WebviewMessage | undefined {
       const input = parseFieldInput(raw.input);
       if (!isString(raw.requestId) || !isString(raw.itemId) || !isString(raw.fieldId) || input === undefined) return undefined;
       return { type: 'setField', requestId: raw.requestId, itemId: raw.itemId, fieldId: raw.fieldId, input };
+    }
+    case 'setPosition':
+      if (!isString(raw.requestId) || !isString(raw.itemId) || (raw.afterId !== undefined && !isString(raw.afterId))) return undefined;
+      return { type: 'setPosition', requestId: raw.requestId, itemId: raw.itemId, ...(isString(raw.afterId) ? { afterId: raw.afterId } : {}) };
+    case 'addDraft': {
+      const title = isString(raw.title) ? raw.title.trim().slice(0, 256) : '';
+      if (!isString(raw.requestId) || !title) return undefined;
+      if (raw.fieldId === undefined) return { type: 'addDraft', requestId: raw.requestId, title };
+      const input = parseFieldInput(raw.input);
+      if (!isString(raw.fieldId) || input === undefined) return undefined;
+      return { type: 'addDraft', requestId: raw.requestId, title, fieldId: raw.fieldId, input };
     }
     default:
       return undefined;

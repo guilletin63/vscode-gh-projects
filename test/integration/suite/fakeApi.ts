@@ -55,6 +55,8 @@ export const items = Array.from({ length: 250 }, (_, i) => ({
 }));
 
 export const writes: { itemId: string; fieldId: string; input: unknown }[] = [];
+export const positions: { itemId: string; afterId: string | undefined }[] = [];
+export const drafts: string[] = [];
 export const failures = { next: false };
 
 export const detailRequests: string[] = [];
@@ -71,6 +73,17 @@ export function createFakeApi() {
         throw new Error('Simulated GitHub failure');
       }
       writes.push({ itemId, fieldId, input });
+    },
+    setItemPosition: async (_projectId: string, itemId: string, afterId: string | undefined) => {
+      if (failures.next) {
+        failures.next = false;
+        throw new Error('Simulated GitHub failure');
+      }
+      positions.push({ itemId, afterId });
+    },
+    addDraftIssue: async (_projectId: string, title: string) => {
+      drafts.push(title);
+      return `PVTI_draft_${drafts.length}`;
     },
     getProject: async () => projectDetails,
     listItems: async (_p: unknown, onProgress?: (p: { loaded: number; total: number }) => void) => {

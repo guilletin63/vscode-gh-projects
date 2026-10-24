@@ -1,6 +1,6 @@
 import * as assert from 'node:assert';
 import * as vscode from 'vscode';
-import { createFakeApi, detailRequests, failures, items, projects, writes } from './fakeApi';
+import { createFakeApi, detailRequests, drafts, failures, items, positions, projects, writes } from './fakeApi';
 
 interface Board {
   projectId: string;
@@ -8,6 +8,8 @@ interface Board {
   refresh(): Promise<void>;
   setFilter(filter: unknown): Promise<void>;
   setField(requestId: string, itemId: string, fieldId: string, input: unknown): Promise<boolean>;
+  setPosition(requestId: string, itemId: string, afterId: string | undefined): Promise<boolean>;
+  addDraft(requestId: string, title: string, fieldId?: string, input?: unknown): Promise<boolean>;
   loadDetail(itemId: string): Promise<void>;
   openInPrExtension(itemId: string): Promise<boolean>;
   panel: vscode.WebviewPanel;
@@ -90,6 +92,39 @@ suite('board webview', () => {
     assert.strictEqual(detailRequests.at(-1), 'PVTI_3');
     const installed = vscode.extensions.getExtension('GitHub.vscode-pull-request-github') !== undefined;
     assert.strictEqual(await board.openInPrExtension('PVTI_3'), installed ? true : false);
+    board.panel.dispose();
+  });
+
+  test('moves an item in the project order, and keeps the order on failure', async () => {
+    const project = projects['octo-user']?.[0];
+    const board = (await vscode.commands.executeCommand('ghProjects.openBoard', { project })) as Board;
+    await board.refresh();
+    const ids = () => board.current?.items.slice(0, 4).map((i) => i.id);
+    assert.strictEqual(await board.setPosition('p1', 'PVTI_3', 'PVTI_0'), true);
+    assert.deepStrictEqual(positions.at(-1), { itemId: 'PVTI_3', afterId: 'PVTI_0' });
+    assert.deepStrictEqual(ids(), ['PVTI_0', 'PVTI_3', 'PVTI_1', 'PVTI_2']);
+    assert.strictEqual(await board.setPosition('p2', 'PVTI_2', undefined), true);
+    assert.deepStrictEqual(ids(), ['PVTI_2', 'PVTI_0', 'PVTI_3', 'PVTI_1']);
+
+    failures.next = true;
+    assert.strictEqual(await board.setPosition('p3', 'PVTI_1', undefined), false);
+    assert.deepStrictEqual(ids(), ['PVTI_2', 'PVTI_0', 'PVTI_3', 'PVTI_1'], 'host order unchanged');
+    assert.strictEqual(await board.setPosition('p4', 'PVTI_1', 'gone'), false, 'unknown afterId is rejected');
+    board.panel.dispose();
+  });
+
+  test('adds a draft with the value of its column, and rejects invalid values', async () => {
+    const project = projects['octo-user']?.[0];
+    const board = (await vscode.commands.executeCommand('ghProjects.openBoard', { project })) as Board;
+    await board.refresh();
+    const before = writes.length;
+    assert.strictEqual(await board.addDraft('a1', 'New idea', 'F1', { kind: 'singleSelect', optionId: 'doing' }), true);
+    assert.strictEqual(drafts.at(-1), 'New idea');
+    assert.deepStrictEqual(writes.at(-1), { itemId: `PVTI_draft_${drafts.length}`, fieldId: 'F1', input: { kind: 'singleSelect', optionId: 'doing' } });
+    assert.strictEqual(await board.addDraft('a2', 'No column'), true);
+    assert.strictEqual(writes.length, before + 1, 'no field write without a column');
+    assert.strictEqual(await board.addDraft('a3', 'Bad', 'F1', { kind: 'singleSelect', optionId: 'nope' }), false);
+    assert.strictEqual(drafts.at(-1), 'No column', 'nothing created for an invalid value');
     board.panel.dispose();
   });
 });

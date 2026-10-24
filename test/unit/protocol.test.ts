@@ -15,4 +15,21 @@ describe('parseWebviewMessage', () => {
     expect(parseWebviewMessage({ type: 'openExternal', url: 'vscode://some.ext/run' })).toBeUndefined();
     expect(parseWebviewMessage({ type: 'openExternal', url: 'javascript:alert(1)' })).toBeUndefined();
   });
+
+  it('validates position and draft messages', () => {
+    expect(parseWebviewMessage({ type: 'setPosition', requestId: 'r', itemId: 'I', afterId: 'A' })).toEqual({ type: 'setPosition', requestId: 'r', itemId: 'I', afterId: 'A' });
+    expect(parseWebviewMessage({ type: 'setPosition', requestId: 'r', itemId: 'I' })).toEqual({ type: 'setPosition', requestId: 'r', itemId: 'I' });
+    expect(parseWebviewMessage({ type: 'setPosition', requestId: 'r', itemId: 'I', afterId: 3 })).toBeUndefined();
+    expect(parseWebviewMessage({ type: 'addDraft', requestId: 'r', title: '  Idea  ' })).toEqual({ type: 'addDraft', requestId: 'r', title: 'Idea' });
+    expect(parseWebviewMessage({ type: 'addDraft', requestId: 'r', title: '   ' })).toBeUndefined();
+    expect(parseWebviewMessage({ type: 'addDraft', requestId: 'r', title: 'x'.repeat(300) })).toMatchObject({ title: 'x'.repeat(256) });
+    expect(parseWebviewMessage({ type: 'addDraft', requestId: 'r', title: 'T', fieldId: 'F', input: { kind: 'singleSelect', optionId: 'o' } })).toEqual({
+      type: 'addDraft',
+      requestId: 'r',
+      title: 'T',
+      fieldId: 'F',
+      input: { kind: 'singleSelect', optionId: 'o' },
+    });
+    expect(parseWebviewMessage({ type: 'addDraft', requestId: 'r', title: 'T', fieldId: 'F', input: { kind: 'bogus' } })).toBeUndefined();
+  });
 });

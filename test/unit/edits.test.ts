@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import type { GraphQLClient } from '../../src/api/client';
 import { GitHubProjectsApi } from '../../src/api/projectsApi';
-import { CLEAR_FIELD_VALUE_MUTATION, UPDATE_FIELD_VALUE_MUTATION } from '../../src/api/queries';
-import { PendingEdits, setItemValue, toFieldValue, toGraphQLValue, validateInput } from '../../src/model/edits';
+import { ADD_DRAFT_ISSUE_MUTATION, CLEAR_FIELD_VALUE_MUTATION, UPDATE_FIELD_VALUE_MUTATION, UPDATE_ITEM_POSITION_MUTATION } from '../../src/api/queries';
+import { PendingEdits, afterIdFor, isSameValue, moveItemAfter, setItemValue, toFieldValue, toGraphQLValue, validateInput } from '../../src/model/edits';
 import type { ProjectField, ProjectItem } from '../../src/model/types';
 
 const status: ProjectField = {
@@ -77,6 +77,29 @@ describe('mutation inputs', () => {
       { query: CLEAR_FIELD_VALUE_MUTATION, vars: { projectId: 'P', itemId: 'IT', fieldId: 'S' }, write: true },
     ]);
   });
+
+  it('sends position and draft mutations with the write token', async () => {
+    const calls: { query: string; vars: unknown; write: boolean | undefined }[] = [];
+    let reply: unknown = {};
+    const client = {
+      request: async (query: string, vars: unknown, opts?: { write?: boolean }) => {
+        calls.push({ query, vars, write: opts?.write });
+        return reply;
+      },
+    } as unknown as GraphQLClient;
+    const api = new GitHubProjectsApi(client);
+    await api.setItemPosition('P', 'IT', 'A');
+    await api.setItemPosition('P', 'IT', undefined);
+    reply = { addProjectV2DraftIssue: { projectItem: { id: 'PVTI_new' } } };
+    expect(await api.addDraftIssue('P', 'Idea')).toBe('PVTI_new');
+    expect(calls).toEqual([
+      { query: UPDATE_ITEM_POSITION_MUTATION, vars: { projectId: 'P', itemId: 'IT', afterId: 'A' }, write: true },
+      { query: UPDATE_ITEM_POSITION_MUTATION, vars: { projectId: 'P', itemId: 'IT', afterId: null }, write: true },
+      { query: ADD_DRAFT_ISSUE_MUTATION, vars: { projectId: 'P', title: 'Idea' }, write: true },
+    ]);
+    reply = { addProjectV2DraftIssue: null };
+    await expect(api.addDraftIssue('P', 'Idea')).rejects.toThrow(/new item/);
+  });
 });
 
 describe('optimistic edits', () => {
@@ -117,5 +140,54 @@ describe('optimistic edits', () => {
     edits.apply([card('a', 'todo')], 'a', status, { kind: 'singleSelect', optionId: 'done' });
     const refreshed = [card('a', 'todo'), card('c')];
     expect(column(edits.reapply(refreshed), 'a')).toBe('done');
+  });
+});
+
+describe('positions', () => {
+  const ids = (items: ProjectItem[]) => items.map((i) => i.id).join('');
+  const items = ['a', 'b', 'c', 'd'].map((id) => card(id));
+
+  it('moves an item after another or to the top and reports where it was', () => {
+    expect(ids(moveItemAfter(items, 'a', 'c').items)).toBe('bcad');
+    expect(moveItemAfter(items, 'c', undefined)).toMatchObject({ previousAfterId: 'b' });
+    expect(ids(moveItemAfter(items, 'c', undefined).items)).toBe('cabd');
+    expect(ids(moveItemAfter(items, 'a', 'gone').items)).toBe('abcd');
+  });
+
+  it('computes afterId to drop before or after a target', () => {
+    expect(afterIdFor(items, 'd', 'b', 'before')).toBe('a');
+    expect(afterIdFor(items, 'd', 'a', 'before')).toBeUndefined();
+    expect(afterIdFor(items, 'a', 'c', 'after')).toBe('c');
+    // Already there: nothing to do.
+    expect(afterIdFor(items, 'b', 'c', 'before')).toBeNull();
+    expect(afterIdFor(items, 'b', 'a', 'after')).toBeNull();
+    expect(afterIdFor(items, 'b', 'b', 'after')).toBeNull();
+  });
+
+  it('applies, re-applies and rolls back moves', () => {
+    const edits = new PendingEdits();
+    const move = edits.applyPosition(items, 'd', 'a');
+    expect(ids(move.items)).toBe('adbc');
+    expect(ids(edits.reapply(items))).toBe('adbc');
+    expect(ids(edits.revert(move.items, move.requestId))).toBe('abcd');
+    expect(edits.size).toBe(0);
+  });
+
+  it('rolls back a move to the top', () => {
+    const edits = new PendingEdits();
+    const move = edits.applyPosition(items, 'a', 'c');
+    expect(ids(edits.revert(move.items, move.requestId))).toBe('abcd');
+  });
+});
+
+describe('isSameValue', () => {
+  it('compares a value with the input that would replace it', () => {
+    const v = { kind: 'singleSelect' as const, fieldId: 'S', optionId: 'todo', name: 'Todo' };
+    expect(isSameValue(v, { kind: 'singleSelect', optionId: 'todo' })).toBe(true);
+    expect(isSameValue(v, { kind: 'singleSelect', optionId: 'done' })).toBe(false);
+    expect(isSameValue(v, null)).toBe(false);
+    expect(isSameValue(undefined, null)).toBe(true);
+    expect(isSameValue({ kind: 'date', fieldId: 'D', date: '2026-10-01' }, { kind: 'date', date: '2026-10-01' })).toBe(true);
+    expect(isSameValue({ kind: 'number', fieldId: 'N', number: 3 }, { kind: 'text', text: '3' })).toBe(false);
   });
 });

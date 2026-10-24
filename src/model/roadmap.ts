@@ -141,3 +141,43 @@ export function sortBySpan(items: ProjectItem[], source: DateSource): ProjectIte
     })
     .map((r) => r.item);
 }
+
+/** Bars can be dragged when both ends come from date fields (iterations snap to sprints). */
+export function canDragDates(fields: ProjectField[], source: DateSource | undefined): boolean {
+  if (!source) return false;
+  const kind = (id: string) => fields.find((f) => f.id === id)?.kind;
+  return kind(source.startFieldId) === 'date' && kind(source.endFieldId) === 'date';
+}
+
+export type BarDrag = 'move' | 'start' | 'end';
+
+/** A span after dragging the bar (or one of its ends) by `days`; an end never crosses the other. */
+export function dragSpan(span: Span, mode: BarDrag, days: number): Span {
+  switch (mode) {
+    case 'move':
+      return { start: span.start + days, end: span.end + days };
+    case 'start':
+      return { start: Math.min(span.start + days, span.end), end: span.end };
+    case 'end':
+      return { start: span.start, end: Math.max(span.end + days, span.start) };
+  }
+}
+
+/**
+ * Field writes that give an item its new span. With one date field for both ends only the
+ * start counts (the bar is a single day). Unchanged dates are skipped.
+ */
+export function dateEdits(item: ProjectItem, source: DateSource, span: Span): { fieldId: string; date: string }[] {
+  const current = (fieldId: string) => {
+    const v = item.fieldValues[fieldId];
+    return v?.kind === 'date' ? v.date : undefined;
+  };
+  const wanted =
+    source.startFieldId === source.endFieldId
+      ? [{ fieldId: source.startFieldId, date: isoDay(span.start) }]
+      : [
+          { fieldId: source.startFieldId, date: isoDay(span.start) },
+          { fieldId: source.endFieldId, date: isoDay(span.end) },
+        ];
+  return wanted.filter((w) => current(w.fieldId) !== w.date);
+}

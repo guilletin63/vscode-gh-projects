@@ -14,12 +14,16 @@ views you see at `github.com/users/<owner>/projects/<n>`, with cards you can mov
   (single-select, iteration, number, date, text). Works with projects of any size: items are
   loaded 100 at a time.
 - **Table views** with the fields the view shows on GitHub, in the same order, plus its sort and
-  group-by. Click a column header to sort, pick a field to group by.
+  group-by. Click a column header to sort, pick a field to group by, click a cell to edit it, and
+  drag rows to another group or position.
 - **Roadmap views**: items as bars on a timeline with month headers, iterations and a line for
   today. Bars use an iteration field or date fields (start and target), colored by Status, with
-  Month / Quarter / Year zoom.
-- **Move cards** by drag & drop, with the **Move** menu or with <kbd>Alt</kbd>+<kbd>←</kbd>/<kbd>→</kbd>.
-  The card moves at once; if GitHub rejects the change it goes back and you get a warning.
+  Month / Quarter / Year zoom. Drag a bar, or its ends, to change its dates.
+- **Move cards** by drag & drop, with the **Move** menu or with <kbd>Alt</kbd>+<kbd>←</kbd>/<kbd>→</kbd>,
+  and reorder them inside a column (<kbd>Alt</kbd>+<kbd>↑</kbd>/<kbd>↓</kbd>). Changes show at once;
+  if GitHub rejects one it goes back and you get a warning.
+- **Add items**: "+ Add item" at the bottom of a column or table group creates a draft issue with
+  that column's or group's value.
 - **Filters and search**: text search (`#123`, repository, labels…) plus label, assignee and any
   single-select field. Filters are remembered per project and workspace.
 - **Item details**: the issue or pull request body, its project fields (editable), labels and
@@ -76,6 +80,15 @@ GitHub doesn't share which date fields a roadmap view uses, so pick them with **
 **Target** (an iteration field, a date field or one of each). The first time, the extension uses
 the project's iteration field, or date fields named like *Start* and *Target* / *Due*. Items
 without dates are listed at the end. Click a row or a bar to open its details.
+
+Editing works in every layout:
+
+| | Board | Table | Roadmap |
+| --- | --- | --- | --- |
+| Change a field | drag to a column | drag to a group, or click a cell | drag a bar or its ends (date fields) |
+| Keyboard | <kbd>Alt</kbd>+<kbd>←</kbd>/<kbd>→</kbd> | <kbd>Alt</kbd>+<kbd>↑</kbd>/<kbd>↓</kbd> across groups | <kbd>Alt</kbd>+<kbd>←</kbd>/<kbd>→</kbd> (+<kbd>Shift</kbd>: target only) |
+| Reorder | drag inside a column, <kbd>Alt</kbd>+<kbd>↑</kbd>/<kbd>↓</kbd> | drag, <kbd>Alt</kbd>+<kbd>↑</kbd>/<kbd>↓</kbd> (unsorted tables) | — |
+| New draft | + Add item | + Add item | — |
 
 ![Roadmap view](docs/screenshots/roadmap.png)
 
@@ -135,10 +148,12 @@ Click a card (or a table row, or a roadmap bar) to read its description and edit
 
 - The view's own GitHub filter (`is:open label:bug …`) is not applied; use the panel's filters.
 - Tables don't show the Reviewers and Tracks / Tracked by fields; the table says which fields it
-  leaves out. Table cells are read-only: edit fields from the item details.
+  leaves out. Built-in fields (assignees, labels…) are edited on GitHub.
+- Sorted views have no manual order, like on github.com: reordering is off while a sort applies.
+- Roadmap bars that use an iteration field can't be dragged; change the iteration from the
+  table or the item details.
 - A roadmap's date fields, zoom and markers set on github.com aren't available through GitHub's
   API; choose the dates in the panel (remembered per view).
-- Moving a card changes its column only; the order inside a column follows the project.
 - Organizations whose membership is private may not be listed automatically; add them with
   **Add Owner…**.
 

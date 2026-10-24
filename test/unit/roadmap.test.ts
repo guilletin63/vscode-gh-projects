@@ -1,7 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import {
   buildTimeline,
+  canDragDates,
+  dateEdits,
   dayNumber,
+  dragSpan,
   defaultDateSource,
   isoDay,
   itemSpan,
@@ -108,6 +111,33 @@ describe('ordering and iterations', () => {
     expect(iterationSpans(sprint).map((i) => [i.title, isoDay(i.span.start), isoDay(i.span.end)])).toEqual([
       ['Sprint 1', '2026-10-12', '2026-10-25'],
       ['Sprint 2', '2026-10-26', '2026-11-08'],
+    ]);
+  });
+});
+
+describe('dragging bars', () => {
+  const span = { start: dayNumber('2026-10-10'), end: dayNumber('2026-10-14') };
+  const iso = (s: { start: number; end: number }) => [isoDay(s.start), isoDay(s.end)];
+
+  it('moves the whole bar or one end, never past the other end', () => {
+    expect(iso(dragSpan(span, 'move', 3))).toEqual(['2026-10-13', '2026-10-17']);
+    expect(iso(dragSpan(span, 'start', -2))).toEqual(['2026-10-08', '2026-10-14']);
+    expect(iso(dragSpan(span, 'start', 9))).toEqual(['2026-10-14', '2026-10-14']);
+    expect(iso(dragSpan(span, 'end', -9))).toEqual(['2026-10-10', '2026-10-10']);
+  });
+
+  it('only drags bars made of date fields', () => {
+    expect(canDragDates([start, due, sprint], { startFieldId: 'ST', endFieldId: 'DU' })).toBe(true);
+    expect(canDragDates([start, due, sprint], { startFieldId: 'SP', endFieldId: 'DU' })).toBe(false);
+    expect(canDragDates([start], undefined)).toBe(false);
+  });
+
+  it('writes only the dates that changed', () => {
+    const i = item('a', [d('ST', '2026-10-10'), d('DU', '2026-10-14')]);
+    const moved = { start: dayNumber('2026-10-10'), end: dayNumber('2026-10-20') };
+    expect(dateEdits(i, { startFieldId: 'ST', endFieldId: 'DU' }, moved)).toEqual([{ fieldId: 'DU', date: '2026-10-20' }]);
+    expect(dateEdits(i, { startFieldId: 'DU', endFieldId: 'DU' }, { start: dayNumber('2026-10-16'), end: dayNumber('2026-10-16') })).toEqual([
+      { fieldId: 'DU', date: '2026-10-16' },
     ]);
   });
 });
