@@ -20,16 +20,16 @@ describe('parseWebviewMessage', () => {
     expect(parseWebviewMessage({ type: 'setPosition', requestId: 'r', itemId: 'I', afterId: 'A' })).toEqual({ type: 'setPosition', requestId: 'r', itemId: 'I', afterId: 'A' });
     expect(parseWebviewMessage({ type: 'setPosition', requestId: 'r', itemId: 'I' })).toEqual({ type: 'setPosition', requestId: 'r', itemId: 'I' });
     expect(parseWebviewMessage({ type: 'setPosition', requestId: 'r', itemId: 'I', afterId: 3 })).toBeUndefined();
-    expect(parseWebviewMessage({ type: 'addDraft', requestId: 'r', title: '  Idea  ' })).toEqual({ type: 'addDraft', requestId: 'r', title: 'Idea' });
+    expect(parseWebviewMessage({ type: 'addDraft', requestId: 'r', title: '  Idea  ' })).toEqual({ type: 'addDraft', requestId: 'r', title: 'Idea', values: [] });
     expect(parseWebviewMessage({ type: 'addDraft', requestId: 'r', title: '   ' })).toBeUndefined();
     expect(parseWebviewMessage({ type: 'addDraft', requestId: 'r', title: 'x'.repeat(300) })).toMatchObject({ title: 'x'.repeat(256) });
-    expect(parseWebviewMessage({ type: 'addDraft', requestId: 'r', title: 'T', fieldId: 'F', input: { kind: 'singleSelect', optionId: 'o' } })).toEqual({
-      type: 'addDraft',
-      requestId: 'r',
-      title: 'T',
-      fieldId: 'F',
-      input: { kind: 'singleSelect', optionId: 'o' },
-    });
-    expect(parseWebviewMessage({ type: 'addDraft', requestId: 'r', title: 'T', fieldId: 'F', input: { kind: 'bogus' } })).toBeUndefined();
+    const values = [
+      { fieldId: 'F', input: { kind: 'singleSelect', optionId: 'o' } },
+      { fieldId: 'G', input: { kind: 'number', number: 2 } },
+    ];
+    expect(parseWebviewMessage({ type: 'addDraft', requestId: 'r', title: 'T', values })).toEqual({ type: 'addDraft', requestId: 'r', title: 'T', values });
+    expect(parseWebviewMessage({ type: 'addDraft', requestId: 'r', title: 'T', values: [{ fieldId: 'F', input: { kind: 'bogus' } }] })).toBeUndefined();
+    expect(parseWebviewMessage({ type: 'addDraft', requestId: 'r', title: 'T', values: [{ fieldId: 'F', input: null }] })).toBeUndefined();
+    expect(parseWebviewMessage({ type: 'addDraft', requestId: 'r', title: 'T', values: Array(6).fill(values[0]) })).toBeUndefined();
   });
 });

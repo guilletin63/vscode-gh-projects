@@ -9,8 +9,10 @@ views you see at `github.com/users/<owner>/projects/<n>`, with cards you can mov
 
 - **Projects tree** in the Activity Bar: your user, your organizations and any owner you add,
   with their open projects and views.
+- **Each view shows what it shows on GitHub**: the view's own filter (`-status:Done`,
+  `assignee:@me`, `sprint:@current`…) is applied by GitHub itself, and can be switched off.
 - **Board** grouped by the view's "Column by" field (or `Status`, or the first single-select
-  field). Cards show number, title, repository, labels, assignees and custom fields
+  field), with **swimlanes** when the view has a "Group by" field (or pick one in the toolbar). Cards show number, title, repository, labels, assignees and custom fields
   (single-select, iteration, number, date, text). Works with projects of any size: items are
   loaded 100 at a time.
 - **Table views** with the fields the view shows on GitHub, in the same order, plus its sort and
@@ -92,6 +94,12 @@ Editing works in every layout:
 
 ![Roadmap view](docs/screenshots/roadmap.png)
 
+Views keep the filter saved with them on GitHub: a line under the search box shows it, with
+**Show all items** to see the whole project. Boards with a "Group by" field show swimlanes; drop
+a card in another lane to change that field too.
+
+![Board with swimlanes](docs/screenshots/swimlanes.png)
+
 ### 4. Move cards
 
 Drag a card to another column. It moves immediately and GitHub is updated in the background; if
@@ -146,7 +154,6 @@ Click a card (or a table row, or a roadmap bar) to read its description and edit
 
 ## Known limitations
 
-- The view's own GitHub filter (`is:open label:bug …`) is not applied; use the panel's filters.
 - Tables don't show the Reviewers and Tracks / Tracked by fields; the table says which fields it
   leaves out. Built-in fields (assignees, labels…) are edited on GitHub.
 - Sorted views have no manual order, like on github.com: reordering is off while a sort applies.

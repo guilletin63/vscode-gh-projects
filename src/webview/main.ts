@@ -7,7 +7,7 @@ import type { BoardFilter } from '../model/filter';
 import { applyFilter, buildFacets } from '../model/filter';
 import { canDragDates, dateEdits, dateFields, dayNumber, isoDay, resolveDateSource } from '../model/roadmap';
 import type { DateSource, Span } from '../model/roadmap';
-import { fieldSum, groupInput, groupableFields, sortItems } from '../model/table';
+import { fieldSum, groupInput, groupItems, groupableFields, sortItems } from '../model/table';
 import type { FieldValue, ItemDetail, ProjectField, ProjectItem, ProjectView, ViewSort } from '../model/types';
 import type { BoardState, HostMessage, WebviewMessage } from '../shared/protocol';
 import { h, icons } from './dom';
@@ -72,6 +72,8 @@ interface ViewPrefs {
   zoom?: Zoom;
   /** Folded groups (table, roadmap) and swimlanes. */
   collapsed?: string[];
+  /** Show every item even though the view has a filter on GitHub. */
+  ignoreFilter?: boolean;
 }
 
 function allPrefs(): Record<string, ViewPrefs> {
@@ -181,22 +183,28 @@ function setPosition(itemId: string, afterId: string | undefined): void {
   send({ type: 'setPosition', requestId, itemId, ...(afterId ? { afterId } : {}) });
 }
 
+interface FieldChange {
+  field: ProjectField;
+  input: FieldInput;
+}
+
 /**
- * An item dropped into a column or group (sets `field` when given and different) and/or next to
+ * An item dropped into a column, group or swimlane (sets each field that changes) and/or next to
  * another item (changes its position).
  */
-function dropItem(itemId: string, change: { field?: ProjectField; input?: FieldInput }, next?: { targetId: string; place: Place }): void {
-  const board = ui.board;
-  const item = board?.items.find((i) => i.id === itemId);
-  if (!board || !item) return;
+function dropItem(itemId: string, changes: FieldChange[], next?: { targetId: string; place: Place }): void {
+  const item = ui.board?.items.find((i) => i.id === itemId);
+  if (!ui.board || !item) return;
   ui.openMenu = undefined;
-  const { field, input } = change;
-  const regroup = field && input !== undefined && !isSameValue(item.fieldValues[field.id], input);
-  if (regroup) {
-    const { requestId, items } = pending.apply(board.items, itemId, field, input);
-    ui.board = { ...board, items };
+  const applied = changes.filter((c) => !isSameValue(item.fieldValues[c.field.id], c.input));
+  for (const { field, input } of applied) {
+    const { requestId, items } = pending.apply(ui.board.items, itemId, field, input);
+    ui.board = { ...ui.board, items };
     send({ type: 'setField', requestId, itemId, fieldId: field.id, input });
-    announce(`Moved ${item.title} to ${input === null ? `No ${field.name}` : groupLabel(field, input)}`);
+  }
+  const regroup = applied.length > 0;
+  if (regroup) {
+    announce(`Moved ${item.title} to ${applied.map(({ field, input }) => (input === null ? `No ${field.name}` : groupLabel(field, input))).join(', ')}`);
   }
   if (next && ui.board) {
     const afterId = afterIdFor(ui.board.items, itemId, next.targetId, next.place);
@@ -236,16 +244,12 @@ function cancelAdd(): void {
   render();
 }
 
-/** Adds a draft issue with the value of the column or group it was typed into. */
-function addDraft(key: string, title: string, field?: ProjectField, input?: FieldInput): void {
+/** Adds a draft issue with the values of the column, group or swimlane it was typed into. */
+function addDraft(key: string, title: string, changes: FieldChange[]): void {
   const requestId = `add-${++addSeq}`;
   ui.adding = { key, pending: true, requestId };
-  send({
-    type: 'addDraft',
-    requestId,
-    title,
-    ...(field && input !== undefined && input !== null ? { fieldId: field.id, input } : {}),
-  });
+  const values = changes.flatMap(({ field, input }) => (input === null ? [] : [{ fieldId: field.id, input }]));
+  send({ type: 'addDraft', requestId, title, values });
   render();
 }
 
@@ -286,16 +290,16 @@ function closeDetail(): void {
  * Moves a card to a column by setting the grouping field, and next to another card when
  * dropped on one; optimistic, rolled back on failure.
  */
-function moveItem(itemId: string, columnId: string, next?: { targetId: string; place: Place }): void {
+function moveItem(itemId: string, columnId: string, next?: { targetId: string; place: Place }, lane?: FieldChange): void {
   const board = ui.board;
   if (!board) return;
   const field = resolveGroupField(board.project.fields, currentView(board), board.groupFieldId);
   if (!field) {
-    if (next) dropItem(itemId, {}, next);
+    if (next) dropItem(itemId, lane ? [lane] : [], next);
     return;
   }
   const input: FieldInput = columnId === NO_VALUE_COLUMN ? null : { kind: 'singleSelect', optionId: columnId };
-  dropItem(itemId, { field, input }, next);
+  dropItem(itemId, [{ field, input }, ...(lane ? [lane] : [])], next);
 }
 
 window.addEventListener('message', (event: MessageEvent<HostMessage>) => {
@@ -460,14 +464,15 @@ function view(): Node[] {
     return nodes;
   }
   const board = ui.board;
-  const visible = applyFilter(board.items, board.filter);
+  const scope = viewScope(board);
+  const visible = applyFilter(scope.items, board.filter);
   if (board.items.length > 0) {
     nodes.push(
       filterBar({
         filter: board.filter,
-        facets: buildFacets(board.items, board.project.fields),
+        facets: buildFacets(scope.items, board.project.fields),
         shown: visible.length,
-        total: board.items.length,
+        total: scope.items.length,
         openMenu: ui.openMenu,
         onOpenMenu: (key) => {
           // A re-rendered open <details> fires 'toggle' again: ignore it or we'd render forever.
@@ -479,6 +484,7 @@ function view(): Node[] {
       }),
     );
   }
+  if (scope.filter) nodes.push(viewFilterBar(board, scope.filter));
   nodes.push(layoutView(board, visible));
   const detailItem = ui.detail ? board.items.find((i) => i.id === ui.detail?.itemId) : undefined;
   if (ui.detail && detailItem) {
@@ -499,6 +505,47 @@ function view(): Node[] {
     );
   }
   return nodes;
+}
+
+interface ViewFilterInfo {
+  query: string;
+  state: 'on' | 'off' | 'loading' | 'error';
+  error?: string;
+}
+
+/**
+ * Items of the current view: those matching the view's own GitHub filter, unless the user
+ * chose to see every item (or GitHub couldn't apply it).
+ */
+function viewScope(board: BoardState): { items: ProjectItem[]; filter?: ViewFilterInfo } {
+  const view = currentView(board);
+  const query = view?.filter.trim();
+  if (!view || !query) return { items: board.items };
+  if (prefsFor(view.id).ignoreFilter) return { items: board.items, filter: { query, state: 'off' } };
+  const matches = board.viewMatches?.viewId === view.id ? board.viewMatches : undefined;
+  if (!matches) return { items: board.items, filter: { query, state: 'loading' } };
+  if ('error' in matches) return { items: board.items, filter: { query, state: 'error', error: matches.error } };
+  const ids = new Set(matches.itemIds);
+  return { items: board.items.filter((i) => ids.has(i.id)), filter: { query, state: 'on' } };
+}
+
+function viewFilterBar(board: BoardState, info: ViewFilterInfo): HTMLElement {
+  const view = currentView(board);
+  const toggle = (ignore: boolean) => setPrefs(view?.id, { ignoreFilter: ignore });
+  const text: Record<ViewFilterInfo['state'], string> = {
+    on: 'View filter',
+    off: 'View filter off',
+    loading: 'Applying view filter',
+    error: 'Could not apply the view filter',
+  };
+  return h(
+    'div',
+    { class: `view-filter state-${info.state}`, role: 'status' },
+    h('span', { class: 'muted' }, `${text[info.state]}:`),
+    h('code', { title: info.error ?? 'Filter saved with this view on GitHub' }, info.query),
+    info.state === 'on' ? button('Show all items', () => toggle(true), { class: 'link-button' }) : null,
+    info.state === 'off' ? button('Apply it', () => toggle(false), { class: 'link-button' }) : null,
+  );
 }
 
 function layoutView(board: BoardState, visible: ProjectItem[]): HTMLElement {
@@ -540,13 +587,13 @@ function layoutView(board: BoardState, visible: ProjectItem[]): HTMLElement {
       },
       onDrop: (itemId, groupId, next) => {
         const input = groupField && groupId !== undefined ? groupInput(groupField, groupId) : undefined;
-        dropItem(itemId, groupField && input !== undefined ? { field: groupField, input } : {}, next);
+        dropItem(itemId, groupField && input !== undefined ? [{ field: groupField, input }] : [], next);
       },
       onStartAdd: startAdd,
       onCancelAdd: cancelAdd,
       onAdd: (key, title, groupId) => {
         const input = groupField && groupId !== undefined ? groupInput(groupField, groupId) : undefined;
-        addDraft(key, title, groupField, input);
+        addDraft(key, title, groupField && input !== undefined ? [{ field: groupField, input }] : []);
       },
     });
   }
@@ -632,6 +679,15 @@ function toolbar(): HTMLElement {
       render();
     });
     controls.push(h('label', { class: 'field' }, h('span', {}, 'Column by'), groupSelect));
+    const lanes = effectiveGroupField(board, currentView);
+    controls.push(
+      select(
+        'Swimlanes',
+        [{ value: '', label: 'None' }, ...groupableFields(project.fields).filter((f) => f.id !== groupField?.id).map((f) => ({ value: f.id, label: f.name }))],
+        lanes && lanes.id !== groupField?.id ? lanes.id : '',
+        (value) => setPrefs(currentView?.id, { groupFieldId: value }),
+      ),
+    );
   } else {
     const grouped = effectiveGroupField(board, currentView);
     const groupBy = select(
@@ -699,18 +755,52 @@ function boardView(board: BoardState, visible: ProjectItem[]): HTMLElement {
       h('p', { class: 'muted' }, 'Add issues, pull requests or drafts on GitHub and refresh.'),
     );
   }
-  const fields = cardFields(project.fields, groupField?.id);
   // A board sorted on GitHub shows its cards in that order and has no manual order.
   const sort = view?.sortBy;
-  const columns = buildColumns(sortItems(visible, sort, project.fields), groupField, { alwaysIncludeNone: !!groupField });
-  const ctx: CardContext = {
+  const sorted = sortItems(visible, sort, project.fields);
+  const laneField = effectiveGroupField(board, view);
+  const fields = cardFields(project.fields, groupField?.id).filter((f) => f.id !== laneField?.id);
+  const base = {
     fields,
-    columns,
     movable: !!groupField,
     orderable: !sort?.length,
     numberFields: project.fields.filter((f) => f.kind === 'number'),
   };
-  return h('main', { class: 'board', 'aria-label': `Board grouped by ${groupField?.name ?? 'nothing'}` }, columns.map((c) => columnView(c, ctx)));
+  const label = `Board grouped by ${groupField?.name ?? 'nothing'}`;
+  if (!laneField || laneField.id === groupField?.id) {
+    const columns = buildColumns(sorted, groupField, { alwaysIncludeNone: !!groupField });
+    const ctx: CardContext = { ...base, columns };
+    return h('main', { class: 'board', 'aria-label': label }, columns.map((c) => columnView(c, ctx)));
+  }
+  // Swimlanes: one row of columns per value of the view's "Group by" field.
+  const collapsed = collapsedGroups(view);
+  const lanes = groupItems(sorted, laneField).map((lane) => {
+    const columns = buildColumns(lane.items, groupField, { alwaysIncludeNone: !!groupField });
+    const input = groupInput(laneField, lane.id);
+    const ctx: CardContext = { ...base, columns, laneId: lane.id, ...(input !== undefined ? { lane: { field: laneField, input } } : {}) };
+    const folded = collapsed.has(lane.id);
+    const sums = base.numberFields.flatMap((f) => {
+      const sum = fieldSum(lane.items, f);
+      return sum === undefined ? [] : [`${f.name}: ${sum}`];
+    });
+    const toggle = h(
+      'button',
+      { type: 'button', class: 'group-toggle', 'aria-expanded': String(!folded), title: folded ? 'Expand swimlane' : 'Collapse swimlane' },
+      h('span', { class: 'chevron', 'aria-hidden': 'true' }, folded ? '▸' : '▾'),
+      h('span', { class: `dot color-${lane.option?.color ?? 'none'}`, 'aria-hidden': 'true' }),
+      h('span', { class: 'group-name' }, lane.name),
+      h('span', { class: 'count' }, String(lane.items.length)),
+      sums.length ? h('span', { class: 'muted field-sums' }, sums.join(' · ')) : null,
+    );
+    toggle.addEventListener('click', () => toggleGroup(view, lane.id));
+    return h(
+      'section',
+      { class: 'lane', 'data-lane-id': lane.id, 'aria-label': `${laneField.name}: ${lane.name}` },
+      h('header', { class: 'lane-header' }, toggle),
+      folded ? null : h('div', { class: 'lane-columns' }, columns.map((c) => columnView(c, ctx))),
+    );
+  });
+  return h('main', { class: 'board with-lanes', 'aria-label': `${label}, swimlanes by ${laneField.name}` }, lanes);
 }
 
 interface CardContext {
@@ -722,6 +812,9 @@ interface CardContext {
   orderable: boolean;
   /** Number fields summed in column headers. */
   numberFields: ProjectField[];
+  /** Swimlane the columns belong to, and the value a card dropped in it gets. */
+  laneId?: string;
+  lane?: FieldChange;
 }
 
 function columnView(column: Column, ctx: CardContext): HTMLElement {
@@ -748,13 +841,13 @@ function columnView(column: Column, ctx: CardContext): HTMLElement {
     'section',
     {
       class: `column${isNone ? ' column-none' : ''}${isNone && column.items.length === 0 ? ' only-while-dragging' : ''}`,
-      'data-column-id': column.id,
+      'data-column-id': ctx.laneId !== undefined ? `${ctx.laneId}:${column.id}` : column.id,
       'aria-label': column.name,
     },
     header,
     desc,
     list,
-    addCard(column),
+    addCard(column, ctx),
   );
   if (ctx.movable || ctx.orderable) {
     section.addEventListener('dragover', (e) => {
@@ -781,16 +874,16 @@ function columnView(column: Column, ctx: CardContext): HTMLElement {
       const itemId = e.dataTransfer?.getData(DRAG_TYPE);
       if (!itemId) return;
       const next = card?.dataset.itemId && place && ctx.orderable ? { targetId: card.dataset.itemId, place } : undefined;
-      if (ctx.movable) moveItem(itemId, column.id, next);
-      else if (next) dropItem(itemId, {}, next);
+      if (ctx.movable) moveItem(itemId, column.id, next, ctx.lane);
+      else if (next) dropItem(itemId, ctx.lane ? [ctx.lane] : [], next);
     });
   }
   return section;
 }
 
-/** "+ Add item" at the bottom of a column: a draft issue with that column's value. */
-function addCard(column: Column): HTMLElement {
-  const key = `board:${column.id}`;
+/** "+ Add item" at the bottom of a column: a draft issue with that column's (and lane's) value. */
+function addCard(column: Column, ctx: CardContext): HTMLElement {
+  const key = `board:${ctx.laneId ?? ''}:${column.id}`;
   const adding = ui.adding?.key === key ? ui.adding : undefined;
   if (!adding) {
     const b = h('button', { type: 'button', class: 'add-button' }, '+ Add item');
@@ -811,8 +904,8 @@ function addCard(column: Column): HTMLElement {
     if (e.key !== 'Enter' || !input.value.trim()) return;
     const board = ui.board;
     const field = board ? resolveGroupField(board.project.fields, currentView(board), board.groupFieldId) : undefined;
-    const value: FieldInput | undefined = field && column.id !== NO_VALUE_COLUMN ? { kind: 'singleSelect', optionId: column.id } : undefined;
-    addDraft(key, input.value.trim(), field, value);
+    const changes: FieldChange[] = field && column.id !== NO_VALUE_COLUMN ? [{ field, input: { kind: 'singleSelect', optionId: column.id } }] : [];
+    addDraft(key, input.value.trim(), ctx.lane ? [...changes, ctx.lane] : changes);
   });
   input.addEventListener('blur', () => {
     if (!input.value.trim()) cancelAdd();
@@ -914,7 +1007,7 @@ function cardView(item: ProjectItem, column: Column, ctx: CardContext): HTMLElem
       e.preventDefault();
       const index = column.items.findIndex((i) => i.id === item.id);
       const neighbour = column.items[index + (e.key === 'ArrowUp' ? -1 : 1)];
-      if (neighbour) dropItem(item.id, {}, { targetId: neighbour.id, place: e.key === 'ArrowUp' ? 'before' : 'after' });
+      if (neighbour) dropItem(item.id, [], { targetId: neighbour.id, place: e.key === 'ArrowUp' ? 'before' : 'after' });
     }
   });
   return card;

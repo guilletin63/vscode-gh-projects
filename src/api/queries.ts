@@ -185,6 +185,20 @@ export const PROJECT_ITEMS_QUERY = /* GraphQL */ `
   }
 `;
 
+/** Ids of the items matching a view filter; GitHub parses the filter syntax itself. */
+export const PROJECT_ITEM_IDS_QUERY = /* GraphQL */ `
+  query ProjectItemIds($projectId: ID!, $cursor: String, $query: String!) {
+    node(id: $projectId) {
+      ... on ProjectV2 {
+        items(first: 100, after: $cursor, query: $query) {
+          pageInfo { endCursor hasNextPage }
+          nodes { id }
+        }
+      }
+    }
+  }
+`;
+
 export const UPDATE_FIELD_VALUE_MUTATION = /* GraphQL */ `
   mutation UpdateFieldValue($projectId: ID!, $itemId: ID!, $fieldId: ID!, $value: ProjectV2FieldValue!) {
     updateProjectV2ItemFieldValue(input: { projectId: $projectId, itemId: $itemId, fieldId: $fieldId, value: $value }) {

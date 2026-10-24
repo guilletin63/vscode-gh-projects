@@ -208,6 +208,26 @@ export const scenarios = {
       { wait: 4000 },
     ],
   },
+  // Read-only: a table view with a filter saved on GitHub (-status:Done).
+  'view-filter': {
+    needsToken: true,
+    steps: [
+      { command: 'ghProjects.openBoard', args: [{ project: SANDBOX, viewId: 'PVTV_lAHOBCq4Uc4BoSUHzgMNxZA' }] },
+      { command: 'workbench.action.closeSidebar' },
+    ],
+    waitFor: webviewShown,
+    actions: [{ webview: "(doc) => !!doc.querySelector('.view-filter.state-on') && doc.querySelectorAll('.item-row').length > 0" }, { wait: 2000 }],
+  },
+  // Read-only: the board with swimlanes by Priority.
+  swimlanes: {
+    needsToken: true,
+    steps: [
+      { command: 'ghProjects.openBoard', args: [{ project: SANDBOX, viewId: 'PVTV_lAHOBCq4Uc4BoSUHzgMNwQI' }] },
+      { command: 'workbench.action.closeSidebar' },
+    ],
+    waitFor: webviewShown,
+    actions: [{ webview: "(doc) => doc.querySelectorAll('.card').length > 0" }, { webview: pick('Swimlanes', 'Priority') }, { webview: "(doc) => doc.querySelectorAll('.lane').length > 1" }, { wait: 2000 }],
+  },
   // Label + Status filter. The filter only lives in the throw-away harness profile.
   'board-filtered': {
     needsToken: true,

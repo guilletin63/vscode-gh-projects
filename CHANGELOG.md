@@ -12,6 +12,10 @@
 - **Add items**: "+ Add item" in board columns and table groups creates a draft issue with that
   column's or group's value.
 - Column and group headers show the sum of number fields; table and roadmap groups can be folded.
+- **View filters**: each view shows the items its GitHub filter selects (`-status:Done`,
+  `assignee:@me`, `sprint:@current`…), filtered by GitHub itself. "Show all items" turns it off.
+- **Swimlanes**: boards with a "Group by" field (or one picked in the toolbar) show a lane per
+  value; dropping a card in another lane sets that field as well. Lanes fold.
 
 ## 1.1.0
 

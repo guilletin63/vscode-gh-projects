@@ -1322,3 +1322,69 @@ tbody.drop-target .group-row th {
 .bar-handle.end {
   right: 0;
 }
+
+/* ---- view filter ---- */
+
+.view-filter {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 16px 8px;
+}
+
+.view-filter code {
+  font-family: var(--vscode-editor-font-family);
+  padding: 1px 6px;
+  border-radius: 4px;
+  background: var(--vscode-textCodeBlock-background);
+}
+
+.view-filter.state-off code {
+  text-decoration: line-through;
+  opacity: 0.7;
+}
+
+.view-filter.state-error code {
+  color: var(--vscode-errorForeground);
+}
+
+/* ---- swimlanes ---- */
+
+.board.with-lanes {
+  flex-direction: column;
+  align-items: stretch;
+}
+
+.lane {
+  flex: none;
+}
+
+.lane-header {
+  position: sticky;
+  left: 0;
+  padding: 4px 0;
+  width: max-content;
+}
+
+.lane-columns {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--gap);
+}
+
+.with-lanes .column {
+  max-height: none;
+}
+
+.with-lanes .cards {
+  overflow: visible;
+}
+
+#app.with-detail .board.with-lanes {
+  padding-right: 460px;
+}
+
+/* Column descriptions once, in the first swimlane. */
+.lane + .lane .column-desc {
+  display: none;
+}

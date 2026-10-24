@@ -16,6 +16,13 @@ export interface BoardState {
   filter: BoardFilter;
   /** ISO time of the last successful load. */
   loadedAt: string;
+  /** Items matching the current view's own filter, as GitHub filters them. */
+  viewMatches?: { viewId: string; itemIds: string[] } | { viewId: string; error: string };
+}
+
+export interface DraftValue {
+  fieldId: string;
+  input: Exclude<FieldInput, null>;
 }
 
 /** Extension -> webview */
@@ -45,8 +52,8 @@ export type WebviewMessage =
   | { type: 'setField'; requestId: string; itemId: string; fieldId: string; input: FieldInput }
   /** Optimistic move in the project order: right after `afterId`, or to the top. */
   | { type: 'setPosition'; requestId: string; itemId: string; afterId?: string }
-  /** New draft issue, optionally with a field value (the column or group it was added to). */
-  | { type: 'addDraft'; requestId: string; title: string; fieldId?: string; input?: FieldInput }
+  /** New draft issue with the values of the column, group or swimlane it was added to. */
+  | { type: 'addDraft'; requestId: string; title: string; values: DraftValue[] }
   | { type: 'openDetail'; itemId: string }
   | { type: 'copyLink'; url: string }
   /** Open the issue/PR in the GitHub Pull Requests extension. */
@@ -88,10 +95,15 @@ export function parseWebviewMessage(raw: unknown): WebviewMessage | undefined {
     case 'addDraft': {
       const title = isString(raw.title) ? raw.title.trim().slice(0, 256) : '';
       if (!isString(raw.requestId) || !title) return undefined;
-      if (raw.fieldId === undefined) return { type: 'addDraft', requestId: raw.requestId, title };
-      const input = parseFieldInput(raw.input);
-      if (!isString(raw.fieldId) || input === undefined) return undefined;
-      return { type: 'addDraft', requestId: raw.requestId, title, fieldId: raw.fieldId, input };
+      const rawValues = raw.values === undefined ? [] : raw.values;
+      if (!Array.isArray(rawValues) || rawValues.length > 5) return undefined;
+      const values: DraftValue[] = [];
+      for (const v of rawValues as unknown[]) {
+        const input = isObject(v) ? parseFieldInput(v.input) : undefined;
+        if (!isObject(v) || !isString(v.fieldId) || !input) return undefined;
+        values.push({ fieldId: v.fieldId, input });
+      }
+      return { type: 'addDraft', requestId: raw.requestId, title, values };
     }
     default:
       return undefined;

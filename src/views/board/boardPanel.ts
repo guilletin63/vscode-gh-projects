@@ -6,7 +6,7 @@ import { moveItemAfter, setItemValue, toFieldValue, validateInput } from '../../
 import type { BoardFilter } from '../../model/filter';
 import { normalizeFilter } from '../../model/filter';
 import type { ProjectSummary } from '../../model/types';
-import type { BoardState, HostMessage } from '../../shared/protocol';
+import type { BoardState, DraftValue, HostMessage } from '../../shared/protocol';
 import { parseWebviewMessage } from '../../shared/protocol';
 import { buildCsp, createNonce } from '../csp';
 import { onRateLimit, reportError } from '../notify';
@@ -43,6 +43,7 @@ export class BoardPanel implements vscode.Disposable {
 
   private state: BoardState | undefined;
   private loading: Promise<void> | undefined;
+  private matching: { loadedAt: string; viewId: string; request: Promise<NonNullable<BoardState['viewMatches']>> } | undefined;
   private readonly disposables: vscode.Disposable[] = [];
 
   static open(deps: BoardDeps, project: PersistedBoard['project'], viewId?: string): BoardPanel {
@@ -132,6 +133,43 @@ export class BoardPanel implements vscode.Disposable {
       this.state = { ...this.state, viewId };
       delete this.state.groupFieldId;
       this.post({ type: 'state', state: this.state });
+      void this.loadViewMatches();
+    }
+  }
+
+  /**
+   * Asks GitHub which items match the current view's own filter (`status:Done`, `@me`…), so the
+   * panel shows the same items as github.com. Views without a filter need no request.
+   */
+  async loadViewMatches(opts: { post?: boolean } = {}): Promise<void> {
+    const post = opts.post ?? true;
+    const state = this.state;
+    const view = state?.project.views.find((v) => v.id === state.viewId);
+    if (!state || !view?.filter.trim()) {
+      if (state?.viewMatches) {
+        this.state = { ...state };
+        delete this.state.viewMatches;
+        if (post) this.post({ type: 'state', state: this.state });
+      }
+      return;
+    }
+    if (state.viewMatches?.viewId === view.id) return;
+    // One request per view at a time (switching views and a reload can both ask).
+    if (this.matching?.loadedAt !== state.loadedAt || this.matching.viewId !== view.id) {
+      const request = this.deps
+        .getApi()
+        .listItemIds(state.project.id, view.filter)
+        .then(
+          (itemIds): NonNullable<BoardState['viewMatches']> => ({ viewId: view.id, itemIds }),
+          (err: unknown): NonNullable<BoardState['viewMatches']> => ({ viewId: view.id, error: reportError(`Applying the filter of view ${view.name}`, err) }),
+        );
+      this.matching = { loadedAt: state.loadedAt, viewId: view.id, request };
+    }
+    const matches = await this.matching.request;
+    // The user may have switched views (or reloaded) meanwhile.
+    if (this.state && this.state.viewId === view.id && this.state.viewMatches?.viewId !== view.id) {
+      this.state = { ...this.state, viewMatches: matches };
+      if (post) this.post({ type: 'state', state: this.state });
     }
   }
 
@@ -187,13 +225,16 @@ export class BoardPanel implements vscode.Disposable {
   }
 
   /**
-   * Adds a draft issue, sets the field of the column or group it was added to, and reloads so
-   * the webview gets the new item.
+   * Adds a draft issue, sets the fields of the column, group or swimlane it was added to, and
+   * reloads so the webview gets the new item.
    */
-  async addDraft(requestId: string, title: string, fieldId?: string, input?: FieldInput): Promise<boolean> {
+  async addDraft(requestId: string, title: string, values: DraftValue[] = []): Promise<boolean> {
     const state = this.state;
-    const field = fieldId ? state?.project.fields.find((f) => f.id === fieldId) : undefined;
-    const invalid = !state ? 'The board is still loading.' : fieldId && (!field || input === undefined) ? 'Unknown field.' : field && input !== undefined ? validateInput(field, input) : undefined;
+    let invalid: string | undefined = state ? undefined : 'The board is still loading.';
+    for (const v of values) {
+      const field = state?.project.fields.find((f) => f.id === v.fieldId);
+      invalid ??= field ? validateInput(field, v.input) : 'Unknown field.';
+    }
     if (invalid || !state) {
       this.post({ type: 'addResult', requestId, ok: false, message: invalid });
       return false;
@@ -201,7 +242,7 @@ export class BoardPanel implements vscode.Disposable {
     const api = this.deps.getApi();
     try {
       const itemId = await api.addDraftIssue(state.project.id, title);
-      if (field && input !== undefined && input !== null) await api.setFieldValue(state.project.id, itemId, field.id, input);
+      for (const v of values) await api.setFieldValue(state.project.id, itemId, v.fieldId, v.input);
       this.post({ type: 'addResult', requestId, ok: true });
       await this.refresh();
       return true;
@@ -256,6 +297,8 @@ export class BoardPanel implements vscode.Disposable {
         loadedAt: new Date().toISOString(),
       };
       this.panel.title = project.title;
+      // Filtered views arrive already filtered: no flash of every item first.
+      await this.loadViewMatches({ post: false });
       this.post({ type: 'state', state: this.state });
       BoardPanel.loaded.fire(this);
     } catch (err) {
@@ -295,7 +338,7 @@ export class BoardPanel implements vscode.Disposable {
         void this.setPosition(msg.requestId, msg.itemId, msg.afterId);
         return;
       case 'addDraft':
-        void this.addDraft(msg.requestId, msg.title, msg.fieldId, msg.input);
+        void this.addDraft(msg.requestId, msg.title, msg.values);
         return;
       case 'openDetail':
         void this.loadDetail(msg.itemId);

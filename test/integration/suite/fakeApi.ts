@@ -33,7 +33,10 @@ export const projectDetails = {
       ],
     },
   ],
-  views: [{ id: 'V1', number: 1, name: 'Board', layout: 'board', filter: '', columnFieldId: 'F1' }],
+  views: [
+    { id: 'V1', number: 1, name: 'Board', layout: 'board', filter: '', columnFieldId: 'F1' },
+    { id: 'V3', number: 3, name: 'Done', layout: 'table', filter: 'status:Done' },
+  ],
 };
 
 /** 250 items so the board exercises more than one page worth of cards. */
@@ -58,6 +61,7 @@ export const writes: { itemId: string; fieldId: string; input: unknown }[] = [];
 export const positions: { itemId: string; afterId: string | undefined }[] = [];
 export const drafts: string[] = [];
 export const failures = { next: false };
+export const filterQueries: string[] = [];
 
 export const detailRequests: string[] = [];
 
@@ -84,6 +88,11 @@ export function createFakeApi() {
     addDraftIssue: async (_projectId: string, title: string) => {
       drafts.push(title);
       return `PVTI_draft_${drafts.length}`;
+    },
+    listItemIds: async (_projectId: string, query: string) => {
+      filterQueries.push(query);
+      if (query === 'status:Done') return items.filter((i) => (i.fieldValues as { F1?: { optionId: string } }).F1?.optionId === 'done').map((i) => i.id);
+      throw new Error('Invalid filter');
     },
     getProject: async () => projectDetails,
     listItems: async (_p: unknown, onProgress?: (p: { loaded: number; total: number }) => void) => {

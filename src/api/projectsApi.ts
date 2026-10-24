@@ -12,6 +12,7 @@ import {
   ITEM_DETAIL_QUERY,
   OWNER_LOOKUP_QUERY,
   PROJECT_DETAILS_QUERY,
+  PROJECT_ITEM_IDS_QUERY,
   PROJECT_ITEMS_QUERY,
   PROJECTS_QUERY,
   UPDATE_FIELD_VALUE_MUTATION,
@@ -46,6 +47,8 @@ export interface ProjectsApi {
   getProject(projectId: string): Promise<ProjectDetails>;
   /** Every non-archived item, following cursors 100 at a time. */
   listItems(project: ProjectDetails, onProgress?: (p: LoadProgress) => void): Promise<ProjectItem[]>;
+  /** Ids of the items matching a view filter such as `status:Done assignee:@me`. */
+  listItemIds(projectId: string, query: string): Promise<string[]>;
   /** Writes (or clears, with null) one field of one item. Needs the `project` scope. */
   setFieldValue(projectId: string, itemId: string, fieldId: string, input: FieldInput): Promise<void>;
   /** Moves an item right after `afterId`, or to the top without it. Needs the `project` scope. */
@@ -114,6 +117,21 @@ export class GitHubProjectsApi implements ProjectsApi {
       },
       (loaded) => onProgress?.({ loaded, total }),
     );
+  }
+
+  listItemIds(projectId: string, query: string): Promise<string[]> {
+    return paginate(async (cursor) => {
+      const r = await this.client.request<{ node: { items?: { nodes: ({ id: string } | null)[] | null; pageInfo: { endCursor: string | null; hasNextPage: boolean } } } | null }>(
+        PROJECT_ITEM_IDS_QUERY,
+        { projectId, cursor, query },
+      );
+      const conn = r.node?.items;
+      return {
+        nodes: (conn?.nodes ?? []).flatMap((n) => (n ? [n.id] : [])),
+        endCursor: conn?.pageInfo.endCursor ?? null,
+        hasNextPage: conn?.pageInfo.hasNextPage ?? false,
+      };
+    });
   }
 
   async setFieldValue(projectId: string, itemId: string, fieldId: string, input: FieldInput): Promise<void> {

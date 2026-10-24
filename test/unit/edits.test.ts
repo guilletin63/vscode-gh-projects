@@ -100,6 +100,25 @@ describe('mutation inputs', () => {
     reply = { addProjectV2DraftIssue: null };
     await expect(api.addDraftIssue('P', 'Idea')).rejects.toThrow(/new item/);
   });
+
+  it('pages through the ids matching a view filter', async () => {
+    const queries: unknown[] = [];
+    const pages = [
+      { node: { items: { nodes: [{ id: 'a' }, null], pageInfo: { endCursor: 'c1', hasNextPage: true } } } },
+      { node: { items: { nodes: [{ id: 'b' }], pageInfo: { endCursor: 'c2', hasNextPage: false } } } },
+    ];
+    const client = {
+      request: async (_query: string, vars: unknown, opts?: { write?: boolean }) => {
+        queries.push({ vars, write: opts?.write });
+        return pages.shift();
+      },
+    } as unknown as GraphQLClient;
+    expect(await new GitHubProjectsApi(client).listItemIds('P', 'status:Done')).toEqual(['a', 'b']);
+    expect(queries).toEqual([
+      { vars: { projectId: 'P', cursor: null, query: 'status:Done' }, write: undefined },
+      { vars: { projectId: 'P', cursor: 'c1', query: 'status:Done' }, write: undefined },
+    ]);
+  });
 });
 
 describe('optimistic edits', () => {

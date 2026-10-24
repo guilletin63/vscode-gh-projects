@@ -1,15 +1,22 @@
 import * as assert from 'node:assert';
 import * as vscode from 'vscode';
-import { createFakeApi, detailRequests, drafts, failures, items, positions, projects, writes } from './fakeApi';
+import { createFakeApi, detailRequests, drafts, failures, filterQueries, items, positions, projects, writes } from './fakeApi';
 
 interface Board {
   projectId: string;
-  current?: { items: { id: string; fieldValues: Record<string, { optionId?: string }> }[]; viewId?: string; filter: { text: string; labels: string[] } };
+  current?: {
+    items: { id: string; fieldValues: Record<string, { optionId?: string }> }[];
+    viewId?: string;
+    filter: { text: string; labels: string[] };
+    viewMatches?: { viewId: string; itemIds?: string[]; error?: string };
+  };
+  selectView(viewId: string): void;
+  loadViewMatches(): Promise<void>;
   refresh(): Promise<void>;
   setFilter(filter: unknown): Promise<void>;
   setField(requestId: string, itemId: string, fieldId: string, input: unknown): Promise<boolean>;
   setPosition(requestId: string, itemId: string, afterId: string | undefined): Promise<boolean>;
-  addDraft(requestId: string, title: string, fieldId?: string, input?: unknown): Promise<boolean>;
+  addDraft(requestId: string, title: string, values?: { fieldId: string; input: unknown }[]): Promise<boolean>;
   loadDetail(itemId: string): Promise<void>;
   openInPrExtension(itemId: string): Promise<boolean>;
   panel: vscode.WebviewPanel;
@@ -118,13 +125,31 @@ suite('board webview', () => {
     const board = (await vscode.commands.executeCommand('ghProjects.openBoard', { project })) as Board;
     await board.refresh();
     const before = writes.length;
-    assert.strictEqual(await board.addDraft('a1', 'New idea', 'F1', { kind: 'singleSelect', optionId: 'doing' }), true);
+    assert.strictEqual(await board.addDraft('a1', 'New idea', [{ fieldId: 'F1', input: { kind: 'singleSelect', optionId: 'doing' } }]), true);
     assert.strictEqual(drafts.at(-1), 'New idea');
     assert.deepStrictEqual(writes.at(-1), { itemId: `PVTI_draft_${drafts.length}`, fieldId: 'F1', input: { kind: 'singleSelect', optionId: 'doing' } });
     assert.strictEqual(await board.addDraft('a2', 'No column'), true);
     assert.strictEqual(writes.length, before + 1, 'no field write without a column');
-    assert.strictEqual(await board.addDraft('a3', 'Bad', 'F1', { kind: 'singleSelect', optionId: 'nope' }), false);
+    assert.strictEqual(await board.addDraft('a3', 'Bad', [{ fieldId: 'F1', input: { kind: 'singleSelect', optionId: 'nope' } }]), false);
     assert.strictEqual(drafts.at(-1), 'No column', 'nothing created for an invalid value');
+    board.panel.dispose();
+  });
+
+  test("applies the view's own filter through GitHub, once per view", async () => {
+    const project = projects['octo-user']?.[0];
+    const board = (await vscode.commands.executeCommand('ghProjects.openBoard', { project })) as Board;
+    await board.refresh();
+    assert.strictEqual(board.current?.viewMatches, undefined, 'the board view has no filter');
+    const before = filterQueries.length;
+    board.selectView('V3');
+    await board.loadViewMatches();
+    const done = items.filter((i) => (i.fieldValues as { F1?: { optionId: string } }).F1?.optionId === 'done').map((i) => i.id);
+    assert.deepStrictEqual(board.current?.viewMatches, { viewId: 'V3', itemIds: done });
+    await board.loadViewMatches();
+    assert.strictEqual(filterQueries.length, before + 1, 'cached until the next load');
+    board.selectView('V1');
+    await board.loadViewMatches();
+    assert.strictEqual(board.current?.viewMatches, undefined);
     board.panel.dispose();
   });
 });
