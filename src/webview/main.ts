@@ -12,12 +12,12 @@ import type { FieldValue, ItemDetail, ProjectField, ProjectItem, ProjectView, Vi
 import type { BoardState, HostMessage, WebviewMessage } from '../shared/protocol';
 import { h, icons } from './dom';
 import { detailPanel } from './detail';
-import type { Place } from './dnd';
-import { DRAG_TYPE, clearDropMarks, isItemDrag, itemUnder, makeDraggable, markDropPlace } from './dnd';
 import { filterBar } from './filterBar';
 import { assigneeList, formatDate, itemRef, labelList, labelledIcon } from './itemParts';
 import type { Zoom } from './roadmapView';
 import { ZOOM_SCALE, isBarDragging, roadmapView } from './roadmapView';
+import type { DropTarget } from './sortable';
+import { isSorting, justDropped, sortableList } from './sortable';
 import { tableView } from './tableView';
 
 interface VsCodeApi {
@@ -192,7 +192,7 @@ interface FieldChange {
  * An item dropped into a column, group or swimlane (sets each field that changes) and/or next to
  * another item (changes its position).
  */
-function dropItem(itemId: string, changes: FieldChange[], next?: { targetId: string; place: Place }): void {
+function dropItem(itemId: string, changes: FieldChange[], next?: DropTarget): void {
   const item = ui.board?.items.find((i) => i.id === itemId);
   if (!ui.board || !item) return;
   ui.openMenu = undefined;
@@ -290,7 +290,7 @@ function closeDetail(): void {
  * Moves a card to a column by setting the grouping field, and next to another card when
  * dropped on one; optimistic, rolled back on failure.
  */
-function moveItem(itemId: string, columnId: string, next?: { targetId: string; place: Place }, lane?: FieldChange): void {
+function moveItem(itemId: string, columnId: string, next?: DropTarget, lane?: FieldChange): void {
   const board = ui.board;
   if (!board) return;
   const field = resolveGroupField(board.project.fields, currentView(board), board.groupFieldId);
@@ -362,8 +362,8 @@ window.addEventListener('message', (event: MessageEvent<HostMessage>) => {
 let renderPending = false;
 
 function render(): void {
-  // Re-rendering would destroy the bar being dragged; render once the drag ends.
-  if (isBarDragging()) {
+  // Re-rendering would destroy the bar or card being dragged; render once the drag ends.
+  if (isBarDragging() || isSorting()) {
     renderPending = true;
     return;
   }
@@ -589,6 +589,7 @@ function layoutView(board: BoardState, visible: ProjectItem[]): HTMLElement {
         const input = groupField && groupId !== undefined ? groupInput(groupField, groupId) : undefined;
         dropItem(itemId, groupField && input !== undefined ? [{ field: groupField, input }] : [], next);
       },
+      onSettled: render,
       onStartAdd: startAdd,
       onCancelAdd: cancelAdd,
       onAdd: (key, title, groupId) => {
@@ -843,10 +844,12 @@ function columnView(column: Column, ctx: CardContext): HTMLElement {
     sums.length ? h('span', { class: 'muted field-sums', title: 'Sum of number fields' }, sums.join(' · ')) : null,
   );
   const desc = column.option?.description ? h('p', { class: 'column-desc' }, column.option.description) : null;
-  const list =
-    column.items.length === 0
-      ? h('div', { class: 'column-empty' }, 'No items')
-      : h('ol', { class: 'cards' }, column.items.map((item) => cardView(item, column, ctx)));
+  // The list is always there (even empty) so cards can be dropped into it.
+  const list = h(
+    'ol',
+    { class: 'cards' },
+    column.items.length === 0 ? h('li', { class: 'column-empty' }, 'No items') : column.items.map((item) => cardView(item, column, ctx)),
+  );
   const isNone = column.id === NO_VALUE_COLUMN;
   const section = h(
     'section',
@@ -861,36 +864,28 @@ function columnView(column: Column, ctx: CardContext): HTMLElement {
     addCard(column, ctx),
   );
   if (ctx.movable || ctx.orderable) {
-    section.addEventListener('dragover', (e) => {
-      if (!isItemDrag(e)) return;
-      const card = itemUnder(e);
-      if (!ctx.movable && !card) return;
-      e.preventDefault();
-      if (e.dataTransfer) e.dataTransfer.dropEffect = 'move';
-      clearDropMarks(app);
-      if (ctx.movable) section.classList.add('drop-target');
-      if (card && ctx.orderable) markDropPlace(e, card);
+    sortableList(list, {
+      // Cards travel between columns (and swimlanes) only when there is a field to set.
+      ...(ctx.movable ? { group: 'board-cards' } : {}),
+      sort: ctx.orderable,
+      draggable: '.card',
+      root: app,
+      onDrop: (itemId, to, next) => {
+        const target = listColumns.get(to) ?? { column, ctx };
+        const place = target.ctx.orderable ? next : undefined;
+        if (target.ctx.movable) moveItem(itemId, target.column.id, place, target.ctx.lane);
+        else if (place) dropItem(itemId, target.ctx.lane ? [target.ctx.lane] : [], place);
+        else render();
+      },
+      onSettled: render,
     });
-    section.addEventListener('dragleave', (e) => {
-      if (!section.contains(e.relatedTarget as Node | null)) clearDropMarks(section);
-    });
-    section.addEventListener('drop', (e) => {
-      if (!isItemDrag(e)) return;
-      e.preventDefault();
-      const card = itemUnder(e);
-      const place = card ? markDropPlace(e, card) : undefined;
-      clearDropMarks(app);
-      // The re-render replaces the dragged card, so its 'dragend' may never reach us.
-      app.classList.remove('is-dragging');
-      const itemId = e.dataTransfer?.getData(DRAG_TYPE);
-      if (!itemId) return;
-      const next = card?.dataset.itemId && place && ctx.orderable ? { targetId: card.dataset.itemId, place } : undefined;
-      if (ctx.movable) moveItem(itemId, column.id, next, ctx.lane);
-      else if (next) dropItem(itemId, ctx.lane ? [ctx.lane] : [], next);
-    });
+    listColumns.set(list, { column, ctx });
   }
   return section;
 }
+
+/** Column (and swimlane) of each rendered card list, to resolve where a card was dropped. */
+const listColumns = new WeakMap<HTMLElement, { column: Column; ctx: CardContext }>();
 
 /** "+ Add item" at the bottom of a column: a draft issue with that column's (and lane's) value. */
 function addCard(column: Column, ctx: CardContext): HTMLElement {
@@ -997,14 +992,13 @@ function cardView(item: ProjectItem, column: Column, ctx: CardContext): HTMLElem
   );
   card.addEventListener('click', (e) => {
     // Buttons, links and menus inside the card keep their own behaviour.
-    if ((e.target as Element | null)?.closest('button, a, summary, details, input, select')) return;
+    if (justDropped() || (e.target as Element | null)?.closest('button, a, summary, details, input, select')) return;
     openDetail(item.id);
   });
   card.addEventListener('keydown', (e) => {
     if (e.key === 'Enter' && e.target === card) openDetail(item.id);
   });
   if (ui.detail?.itemId === item.id) card.classList.add('selected');
-  if (ctx.movable || ctx.orderable) makeDraggable(card, item.id, app);
   card.addEventListener('keydown', (e) => {
     if (!e.altKey || e.target !== card) return;
     if (ctx.movable && (e.key === 'ArrowLeft' || e.key === 'ArrowRight')) {

@@ -170,4 +170,4 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for the architecture, commands and tests.
 
 ## License
 
-[MIT](LICENSE)
+[MIT](LICENSE). Drag & drop uses [SortableJS](https://github.com/SortableJS/Sortable) (MIT).

@@ -4,11 +4,11 @@ import type { FieldInput } from '../model/edits';
 import type { RowGroup, TableColumn } from '../model/table';
 import { cellText, fieldSum, groupItems, isEditableField, sortItems, tableColumns } from '../model/table';
 import type { ProjectField, ProjectItem, ProjectView, ViewSort } from '../model/types';
-import type { Place } from './dnd';
-import { clearDropMarks, isItemDrag, itemUnder, makeDraggable, markDropPlace, DRAG_TYPE } from './dnd';
 import { h, icons } from './dom';
 import { fieldControl } from './fieldControl';
 import { assigneeList, formatDate, itemRef, labelList, labelledIcon } from './itemParts';
+import type { DropTarget, Place } from './sortable';
+import { justDropped, sortableList } from './sortable';
 
 export interface TableProps {
   items: ProjectItem[];
@@ -33,7 +33,9 @@ export interface TableProps {
   onStopEdit: () => void;
   onEdit: (itemId: string, field: ProjectField, input: FieldInput) => void;
   /** Drop into a group (undefined: no grouping) and/or next to another row. */
-  onDrop: (itemId: string, groupId: string | undefined, next?: { targetId: string; place: Place }) => void;
+  onDrop: (itemId: string, groupId: string | undefined, next?: DropTarget) => void;
+  /** A drag ended without a change (the panel may re-render again). */
+  onSettled: () => void;
   onStartAdd: (key: string) => void;
   onCancelAdd: () => void;
   onAdd: (key: string, title: string, groupId: string | undefined) => void;
@@ -119,29 +121,16 @@ function body(group: RowGroup | undefined, items: ProjectItem[], ctx: Ctx): HTML
     for (const item of items) tbody.append(row(item, group?.id, ctx));
     if (!props.groupField || ctx.regroupable) tbody.append(addRow(group?.id, ctx));
   }
-  if (group && ctx.regroupable) {
-    tbody.addEventListener('dragover', (e) => {
-      if (!isItemDrag(e)) return;
-      e.preventDefault();
-      if (e.dataTransfer) e.dataTransfer.dropEffect = 'move';
-      clearDropMarks(tbody.closest('table') ?? tbody);
-      tbody.classList.add('drop-target');
-      const target = itemUnder(e);
-      if (target && ctx.orderable) markDropPlace(e, target);
-    });
-  }
+  // Rows move to another group (grouped by a writable field) and/or to another position
+  // (unsorted tables). Grouped by a read-only field such as Assignees, they don't move.
   if (group ? ctx.regroupable : ctx.orderable) {
-    tbody.addEventListener('drop', (e) => {
-      if (!isItemDrag(e)) return;
-      e.preventDefault();
-      const itemId = e.dataTransfer?.getData(DRAG_TYPE);
-      const target = itemUnder(e);
-      const place = target ? markDropPlace(e, target) : undefined;
-      clearDropMarks(props.root);
-      props.root.classList.remove('is-dragging');
-      if (!itemId) return;
-      const next = target?.dataset.itemId && place && ctx.orderable ? { targetId: target.dataset.itemId, place } : undefined;
-      if (group || next) props.onDrop(itemId, group?.id, next);
+    sortableList(tbody, {
+      ...(ctx.regroupable ? { group: 'table-rows' } : {}),
+      sort: ctx.orderable,
+      draggable: '.item-row',
+      root: props.root,
+      onDrop: (itemId, to, next) => props.onDrop(itemId, to.dataset.groupId, ctx.orderable ? next : undefined),
+      onSettled: props.onSettled,
     });
   }
   return tbody;
@@ -157,7 +146,6 @@ function sums(items: ProjectItem[], fields: ProjectField[]): HTMLElement | null 
 
 function row(item: ProjectItem, groupId: string | undefined, ctx: Ctx): HTMLElement {
   const { props, columns } = ctx;
-  const editingRow = props.editing?.itemId === item.id;
   const tr = h(
     'tr',
     {
@@ -169,18 +157,8 @@ function row(item: ProjectItem, groupId: string | undefined, ctx: Ctx): HTMLElem
     },
     columns.map((c) => h('td', { class: `col-${c.cell} kind-${c.field.kind}${isEditableField(c.field) ? ' editable' : ''}` }, cell(item, c, ctx))),
   );
-  if ((ctx.orderable && (!props.groupField || ctx.regroupable)) || ctx.regroupable) {
-    if (!editingRow) makeDraggable(tr, item.id, props.root);
-    tr.addEventListener('dragover', (e) => {
-      if (!isItemDrag(e) || !ctx.orderable) return;
-      e.preventDefault();
-      clearDropMarks(props.root);
-      tr.closest('tbody')?.classList.toggle('drop-target', !!props.groupField);
-      markDropPlace(e, tr);
-    });
-  }
   tr.addEventListener('click', (e) => {
-    if ((e.target as Element | null)?.closest('button, a, input, select')) return;
+    if (justDropped() || (e.target as Element | null)?.closest('button, a, input, select')) return;
     props.onOpen(item.id);
   });
   tr.addEventListener('keydown', (e) => {

@@ -105,9 +105,10 @@ builds GraphQL; it calls `ProjectsApi` methods that return model types.
   the sandbox; set them back before recording again.
 - `npm run drag-check -- "<card title>" "<column>" [--table]` drags a card (or a table row) with
   real mouse input and checks where it lands. Run it after touching drag & drop: tests that fire
-  DOM drag events can't see a drag that Chromium cancels by itself (for example when the page
-  changes styles inside `dragstart`). It moves one sandbox item; drag it back afterwards. If the
-  first press misses (`drag started: false`, no events), run it again.
+  DOM events directly can't see a drag the webview never lets start. It moves one sandbox item;
+  drag it back afterwards.
+- Drag & drop uses SortableJS in pointer mode (`forceFallback`), not native HTML5 drag & drop:
+  inside VS Code webviews (cross-origin iframes) recent versions cancel native drags.
 
 ## Publishing
 

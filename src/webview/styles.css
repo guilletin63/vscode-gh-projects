@@ -554,10 +554,6 @@ input.search::placeholder {
   cursor: grab;
 }
 
-.card.dragging {
-  opacity: 0.5;
-}
-
 .column.only-while-dragging {
   display: none;
 }
@@ -1173,35 +1169,6 @@ input.search::placeholder {
 
 /* ---- editing: drop positions, add item, inline cells, bar handles ---- */
 
-.item-row.drop-before td {
-  box-shadow: inset 0 2px 0 var(--vscode-focusBorder);
-}
-
-.item-row.drop-after td {
-  box-shadow: inset 0 -2px 0 var(--vscode-focusBorder);
-}
-
-.card.drop-before {
-  box-shadow: 0 -3px 0 var(--vscode-focusBorder);
-}
-
-.card.drop-after {
-  box-shadow: 0 3px 0 var(--vscode-focusBorder);
-}
-
-tbody.drop-target .group-row th {
-  color: var(--vscode-focusBorder);
-}
-
-.item-row.dragging,
-.card.dragging {
-  opacity: 0.5;
-}
-
-.item-row[draggable='true'] {
-  cursor: grab;
-}
-
 .add-button {
   font: inherit;
   color: var(--vscode-descriptionForeground);
@@ -1387,4 +1354,45 @@ tbody.drop-target .group-row th {
 /* Column descriptions once, in the first swimlane. */
 .lane + .lane .column-desc {
   display: none;
+}
+
+/* ---- drag & drop (SortableJS in pointer mode) ---- */
+
+/* Where the item will land. */
+.drag-ghost {
+  opacity: 0.35;
+  outline: 1px dashed var(--vscode-focusBorder);
+  outline-offset: -1px;
+}
+
+/* The copy that follows the pointer. */
+.drag-floating {
+  opacity: 0.95 !important;
+  box-shadow: 0 6px 18px var(--vscode-widget-shadow);
+  cursor: grabbing;
+}
+
+.card,
+.item-row {
+  touch-action: pan-y;
+}
+
+/* Card lists fill their column so a card can be dropped anywhere in it. */
+.cards {
+  min-height: 48px;
+}
+
+#app.is-dragging,
+#app.is-dragging * {
+  cursor: grabbing !important;
+  user-select: none;
+}
+
+#app.is-dragging .cards {
+  outline: 1px dashed var(--vscode-panel-border, var(--vscode-widget-border, transparent));
+  outline-offset: -2px;
+}
+
+.cards .column-empty {
+  margin: 4px 0 0;
 }
