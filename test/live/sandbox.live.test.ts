@@ -9,6 +9,8 @@ const SANDBOX_ID = 'PVT_kwHOBCq4Uc4BoSUH';
 const SANDBOX_TITLE = 'vscode-gh-projects sandbox';
 /** A draft item created in the sandbox for these tests. */
 const ITEM_ID = process.env.GHP_SANDBOX_ITEM ?? 'PVTI_lAHOBCq4Uc4BoSUHzhCzpM0';
+/** A sandbox issue (its labels are changed and put back). */
+const ISSUE_ITEM_ID = process.env.GHP_SANDBOX_ISSUE ?? 'PVTI_lAHOBCq4Uc4BoSUHzhCzoiY';
 const token = process.env.GHP_LIVE_TOKEN;
 
 const client = new GraphQLClient({ tokenProvider: async () => token ?? '' });
@@ -120,5 +122,34 @@ describe.skipIf(!token)('sandbox writes (live)', () => {
       { p: SANDBOX_ID, i: id },
       { write: true },
     );
+  });
+
+  it("adds a label to an issue and takes it off again", async () => {
+    const names = async () => {
+      const c = await api.getItemChoices(ISSUE_ITEM_ID);
+      return c.current.labels.map((id) => c.labels.find((l) => l.id === id)!.name).sort();
+    };
+    const choices = await api.getItemChoices(ISSUE_ITEM_ID);
+    expect(choices).toMatchObject({ contentType: 'Issue', labelable: true });
+    const before = await names();
+    const extra = choices.labels.find((l) => !before.includes(l.name))!.name;
+    expect((await api.setLabels(ISSUE_ITEM_ID, [...before, extra])).map((l) => l.name).sort()).toEqual([...before, extra].sort());
+    expect(await names()).toEqual([...before, extra].sort());
+    await api.setLabels(ISSUE_ITEM_ID, before);
+    expect(await names()).toEqual(before);
+  });
+
+  it("clears a draft's assignees and puts them back", async () => {
+    const logins = async () => {
+      const c = await api.getItemChoices(ITEM_ID);
+      return c.current.assignees.map((id) => c.assignees.find((u) => u.id === id)!.login);
+    };
+    const choices = await api.getItemChoices(ITEM_ID);
+    expect(choices).toMatchObject({ contentType: 'DraftIssue', labelable: false, labels: [] });
+    const before = await logins();
+    expect(await api.setAssignees(ITEM_ID, [])).toEqual([]);
+    expect(await logins()).toEqual([]);
+    await api.setAssignees(ITEM_ID, before);
+    expect(await logins()).toEqual(before);
   });
 });

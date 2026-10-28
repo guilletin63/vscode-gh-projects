@@ -2,6 +2,7 @@
 import type {
   FieldKind,
   FieldValue,
+  ItemChoices,
   ItemDetail,
   ItemType,
   Iteration,
@@ -23,7 +24,9 @@ import type {
   RawField,
   RawFieldValue,
   RawItem,
+  RawItemChoicesResponse,
   RawItemDetailResponse,
+  RawPerson,
   RawItemsResponse,
   RawIteration,
   RawProjectDetailsResponse,
@@ -295,5 +298,39 @@ export function mapItemDetail(raw: RawItemDetailResponse): ItemDetail | undefine
     ...(c?.milestone ? { milestone: c.milestone.title } : {}),
     ...(c?.headRefName ? { headRef: c.headRefName } : {}),
     ...(c?.baseRefName ? { baseRef: c.baseRefName } : {}),
+  };
+}
+
+/** Unique by `key` (the first one wins), sorted by it without case. */
+function uniqueSorted<T>(list: T[], key: (t: T) => string): T[] {
+  const seen = new Set<string>();
+  return list
+    .filter((t) => !seen.has(key(t).toLowerCase()) && seen.add(key(t).toLowerCase()))
+    .sort((a, b) => key(a).localeCompare(key(b), undefined, { sensitivity: 'base' }));
+}
+
+function mapPerson(p: RawPerson): { id: string; login: string; avatarUrl?: string } {
+  return { id: p.id, login: p.login, ...(p.avatarUrl ? { avatarUrl: p.avatarUrl } : {}) };
+}
+
+export function mapItemChoices(raw: RawItemChoicesResponse): ItemChoices | undefined {
+  const c = raw.node?.content;
+  const type = c?.__typename;
+  if (!raw.node || !c?.id || (type !== 'Issue' && type !== 'PullRequest' && type !== 'DraftIssue')) return undefined;
+  const current = compact(c.assignees?.nodes);
+  const currentLabels = compact(c.labels?.nodes);
+  // Drafts can be assigned to the users of the project's repositories, and to the viewer.
+  const candidates =
+    type === 'DraftIssue'
+      ? [raw.viewer, ...compact(raw.node.project?.repositories?.nodes).flatMap((r) => compact(r.assignableUsers?.nodes))]
+      : compact(c.repository?.assignableUsers?.nodes);
+  return {
+    itemId: raw.node.id,
+    contentId: c.id,
+    contentType: type,
+    labelable: type !== 'DraftIssue',
+    labels: uniqueSorted([...compact(c.repository?.labels?.nodes), ...currentLabels], (l) => l.name).map((l) => ({ id: l.id, name: l.name, color: l.color })),
+    assignees: uniqueSorted([...current, ...candidates], (u) => u.login).map(mapPerson),
+    current: { labels: currentLabels.map((l) => l.id), assignees: current.map((u) => u.id) },
   };
 }

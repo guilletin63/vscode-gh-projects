@@ -3,7 +3,7 @@
 import type { FieldInput } from '../model/edits';
 import type { BoardFilter } from '../model/filter';
 import { normalizeFilter } from '../model/filter';
-import type { ItemDetail, ProjectDetails, ProjectItem } from '../model/types';
+import type { ItemChoices, ItemDetail, ProjectDetails, ProjectItem } from '../model/types';
 
 export interface BoardState {
   project: ProjectDetails;
@@ -31,12 +31,14 @@ export type HostMessage =
   | { type: 'state'; state: BoardState }
   | { type: 'error'; message: string }
   | { type: 'rateLimit'; waitMs: number; reason: string }
-  /** Outcome of a `setField` / `setPosition` request; on failure the webview rolls the edit back. */
+  /** Outcome of a `setField` / `setPosition` / `setLabels` / `setAssignees` request; on failure the webview rolls the edit back. */
   | { type: 'editResult'; requestId: string; ok: boolean; message?: string }
   /** Outcome of an `addDraft` request (the new item arrives with the next `state`). */
   | { type: 'addResult'; requestId: string; ok: boolean; message?: string }
   | { type: 'detail'; itemId: string; detail: ItemDetail }
   | { type: 'detailError'; itemId: string; message: string }
+  | { type: 'choices'; itemId: string; choices: ItemChoices }
+  | { type: 'choicesError'; itemId: string; message: string }
   /** Host capabilities that change what the webview offers. */
   | { type: 'env'; prExtension: boolean };
 
@@ -55,12 +57,19 @@ export type WebviewMessage =
   /** New draft issue with the values of the column, group or swimlane it was added to. */
   | { type: 'addDraft'; requestId: string; title: string; values: DraftValue[] }
   | { type: 'openDetail'; itemId: string }
+  /** Labels and people the item can take, for its edit menus. */
+  | { type: 'loadChoices'; itemId: string }
+  /** Optimistic edits of the item's labels (by name) and assignees (by login). */
+  | { type: 'setLabels'; requestId: string; itemId: string; names: string[] }
+  | { type: 'setAssignees'; requestId: string; itemId: string; logins: string[] }
   | { type: 'copyLink'; url: string }
   /** Open the issue/PR in the GitHub Pull Requests extension. */
   | { type: 'openInPrExtension'; itemId: string };
 
 const isObject = (v: unknown): v is Record<string, unknown> => typeof v === 'object' && v !== null;
 const isString = (v: unknown): v is string => typeof v === 'string';
+/** Label names and logins: at most 100 strings of up to 256 characters. */
+const isNameList = (v: unknown): v is string[] => Array.isArray(v) && v.length <= 100 && v.every((s) => isString(s) && s.length <= 256);
 
 /** Validates messages coming from the webview before the extension acts on them. */
 export function parseWebviewMessage(raw: unknown): WebviewMessage | undefined {
@@ -80,6 +89,7 @@ export function parseWebviewMessage(raw: unknown): WebviewMessage | undefined {
     case 'copyLink':
       return isString(raw.url) && /^https:\/\/github\.com\//.test(raw.url) ? { type: 'copyLink', url: raw.url } : undefined;
     case 'openDetail':
+    case 'loadChoices':
     case 'openInPrExtension':
       return isString(raw.itemId) ? { type: raw.type, itemId: raw.itemId } : undefined;
     case 'setFilter':
@@ -105,6 +115,12 @@ export function parseWebviewMessage(raw: unknown): WebviewMessage | undefined {
       }
       return { type: 'addDraft', requestId: raw.requestId, title, values };
     }
+    case 'setLabels':
+      if (!isString(raw.requestId) || !isString(raw.itemId) || !isNameList(raw.names)) return undefined;
+      return { type: 'setLabels', requestId: raw.requestId, itemId: raw.itemId, names: raw.names };
+    case 'setAssignees':
+      if (!isString(raw.requestId) || !isString(raw.itemId) || !isNameList(raw.logins)) return undefined;
+      return { type: 'setAssignees', requestId: raw.requestId, itemId: raw.itemId, logins: raw.logins };
     default:
       return undefined;
   }

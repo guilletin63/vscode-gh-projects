@@ -258,6 +258,67 @@ export const ADD_DRAFT_ISSUE_MUTATION = /* GraphQL */ `
   }
 `;
 
+const PERSON = 'id login avatarUrl(size: 48)';
+const LABELABLE_CHOICES = `
+  id
+  assignees(first: 20) { nodes { ${PERSON} } }
+  labels(first: 100) { nodes { id name color } }
+  repository {
+    assignableUsers(first: 100) { nodes { ${PERSON} } }
+    labels(first: 100, orderBy: { field: NAME, direction: ASC }) { nodes { id name color } }
+  }
+`;
+
+/** Labels and people an item can take; drafts offer the users of the project's linked repositories. */
+export const ITEM_CHOICES_QUERY = /* GraphQL */ `
+  query ItemChoices($itemId: ID!) {
+    viewer { ${PERSON} }
+    node(id: $itemId) {
+      ... on ProjectV2Item {
+        id
+        project { repositories(first: 10) { nodes { assignableUsers(first: 100) { nodes { ${PERSON} } } } } }
+        content {
+          __typename
+          ... on Issue { ${LABELABLE_CHOICES} }
+          ... on PullRequest { ${LABELABLE_CHOICES} }
+          ... on DraftIssue { id assignees(first: 20) { nodes { ${PERSON} } } }
+        }
+      }
+    }
+  }
+`;
+
+export const ADD_LABELS_MUTATION = /* GraphQL */ `
+  mutation AddLabels($id: ID!, $labelIds: [ID!]!) {
+    addLabelsToLabelable(input: { labelableId: $id, labelIds: $labelIds }) { clientMutationId }
+  }
+`;
+
+export const REMOVE_LABELS_MUTATION = /* GraphQL */ `
+  mutation RemoveLabels($id: ID!, $labelIds: [ID!]!) {
+    removeLabelsFromLabelable(input: { labelableId: $id, labelIds: $labelIds }) { clientMutationId }
+  }
+`;
+
+export const ADD_ASSIGNEES_MUTATION = /* GraphQL */ `
+  mutation AddAssignees($id: ID!, $assigneeIds: [ID!]!) {
+    addAssigneesToAssignable(input: { assignableId: $id, assigneeIds: $assigneeIds }) { clientMutationId }
+  }
+`;
+
+export const REMOVE_ASSIGNEES_MUTATION = /* GraphQL */ `
+  mutation RemoveAssignees($id: ID!, $assigneeIds: [ID!]!) {
+    removeAssigneesFromAssignable(input: { assignableId: $id, assigneeIds: $assigneeIds }) { clientMutationId }
+  }
+`;
+
+/** Drafts replace their whole assignee list. */
+export const UPDATE_DRAFT_ASSIGNEES_MUTATION = /* GraphQL */ `
+  mutation UpdateDraftAssignees($id: ID!, $assigneeIds: [ID!]!) {
+    updateProjectV2DraftIssue(input: { draftIssueId: $id, assigneeIds: $assigneeIds }) { draftIssue { id } }
+  }
+`;
+
 export const ITEM_DETAIL_QUERY = /* GraphQL */ `
   query ItemDetail($itemId: ID!) {
     node(id: $itemId) {

@@ -1,4 +1,4 @@
-import type { FieldValue, ProjectField, ProjectItem } from './types';
+import type { FieldValue, Label, ProjectField, ProjectItem, User } from './types';
 
 /** A value to write to a project field; `null` clears it. */
 export type FieldInput =
@@ -138,12 +138,28 @@ export function afterIdFor(items: ProjectItem[], itemId: string, targetId: strin
   return current >= 0 && currentAfter === afterId ? null : afterId;
 }
 
+/** New labels or assignees for an item. */
+export type ListEdit = { key: 'labels'; value: Label[] } | { key: 'assignees'; value: User[] };
+
+/** Returns new items with the labels or assignees of one item replaced (immutable). */
+export function setItemList(items: ProjectItem[], itemId: string, edit: ListEdit): { items: ProjectItem[]; previous: ListEdit | undefined } {
+  let previous: ListEdit | undefined;
+  const next = items.map((item) => {
+    if (item.id !== itemId) return item;
+    previous = edit.key === 'labels' ? { key: 'labels', value: item.labels } : { key: 'assignees', value: item.assignees };
+    return { ...item, [edit.key]: edit.value };
+  });
+  return { items: next, previous };
+}
+
 type Pending =
   | { kind: 'field'; itemId: string; field: ProjectField; input: FieldInput; previous: FieldValue | undefined }
-  | { kind: 'position'; itemId: string; afterId: string | undefined; previousAfterId: string | undefined };
+  | { kind: 'position'; itemId: string; afterId: string | undefined; previousAfterId: string | undefined }
+  | { kind: 'list'; itemId: string; edit: ListEdit; previous: ListEdit | undefined };
 
 /**
- * Optimistic edits that are still waiting for GitHub: field values and positions. Each one
+ * Optimistic edits that are still waiting for GitHub: field values, positions, labels and
+ * assignees. Each one
  * remembers what it replaced so a failure puts the item back exactly where it was, even if
  * other edits landed meanwhile.
  */
@@ -171,6 +187,14 @@ export class PendingEdits {
     return { requestId, items: next };
   }
 
+  /** Replaces the labels or assignees of an item. */
+  applyList(items: ProjectItem[], itemId: string, edit: ListEdit): { requestId: string; items: ProjectItem[] } {
+    const requestId = `edit-${++this.seq}`;
+    const { items: next, previous } = setItemList(items, itemId, edit);
+    this.pending.set(requestId, { kind: 'list', itemId, edit, previous });
+    return { requestId, items: next };
+  }
+
   /** GitHub accepted the edit. */
   confirm(requestId: string): void {
     this.pending.delete(requestId);
@@ -181,19 +205,23 @@ export class PendingEdits {
     const p = this.pending.get(requestId);
     if (!p) return items;
     this.pending.delete(requestId);
-    return p.kind === 'field'
-      ? setItemValue(items, p.itemId, p.field.id, p.previous).items
-      : moveItemAfter(items, p.itemId, p.previousAfterId).items;
+    switch (p.kind) {
+      case 'field':
+        return setItemValue(items, p.itemId, p.field.id, p.previous).items;
+      case 'position':
+        return moveItemAfter(items, p.itemId, p.previousAfterId).items;
+      case 'list':
+        return p.previous ? setItemList(items, p.itemId, p.previous).items : items;
+    }
   }
 
   /** Re-applies in-flight edits on top of freshly loaded items (a refresh during a move). */
   reapply(items: ProjectItem[]): ProjectItem[] {
     let next = items;
     for (const p of this.pending.values()) {
-      next =
-        p.kind === 'field'
-          ? setItemValue(next, p.itemId, p.field.id, toFieldValue(p.field, p.input)).items
-          : moveItemAfter(next, p.itemId, p.afterId).items;
+      if (p.kind === 'field') next = setItemValue(next, p.itemId, p.field.id, toFieldValue(p.field, p.input)).items;
+      else if (p.kind === 'position') next = moveItemAfter(next, p.itemId, p.afterId).items;
+      else next = setItemList(next, p.itemId, p.edit).items;
     }
     return next;
   }

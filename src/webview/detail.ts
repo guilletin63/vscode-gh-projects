@@ -16,6 +16,9 @@ export interface DetailProps {
   onOpenExternal(url: string): void;
   onCopyLink(url: string): void;
   onOpenInPrExtension(): void;
+  /** "Edit" menus for labels and assignees; null when the item can't take them. */
+  labelMenu: HTMLElement | null;
+  assigneeMenu: HTMLElement | null;
 }
 
 function stateBadge(item: ProjectItem): HTMLElement | null {
@@ -122,8 +125,8 @@ export function detailPanel(props: DetailProps): HTMLElement {
       h('h3', {}, 'Fields'),
       props.fields.length ? props.fields.map((f) => fieldEditor(f, item, props.onEdit)) : h('p', { class: 'muted' }, 'This project has no custom fields.'),
     ),
-    h('section', { class: 'detail-section' }, h('h3', {}, 'Labels'), labels),
-    h('section', { class: 'detail-section' }, h('h3', {}, 'Assignees'), assignees),
+    h('section', { class: 'detail-section' }, h('div', { class: 'detail-section-head' }, h('h3', {}, 'Labels'), props.labelMenu), labels),
+    h('section', { class: 'detail-section' }, h('div', { class: 'detail-section-head' }, h('h3', {}, 'Assignees'), props.assigneeMenu), assignees),
     h('section', { class: 'detail-section' }, h('h3', {}, 'Description'), body),
   );
 }

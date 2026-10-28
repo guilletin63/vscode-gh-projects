@@ -1,0 +1,21 @@
+{
+  "data": {
+    "viewer": { "id": "U_viewer", "login": "octo-user", "avatarUrl": "https://avatars.githubusercontent.com/u/1?s=48" },
+    "node": {
+      "id": "PVTI_draft",
+      "project": {
+        "repositories": {
+          "nodes": [
+            { "assignableUsers": { "nodes": [{ "id": "U_friend", "login": "Friend", "avatarUrl": null }, { "id": "U_viewer", "login": "octo-user", "avatarUrl": "https://avatars.githubusercontent.com/u/1?s=48" }] } },
+            { "assignableUsers": { "nodes": [{ "id": "U_bot", "login": "build-bot", "avatarUrl": null }] } }
+          ]
+        }
+      },
+      "content": {
+        "__typename": "DraftIssue",
+        "id": "DI_draft",
+        "assignees": { "nodes": [{ "id": "U_viewer", "login": "octo-user", "avatarUrl": "https://avatars.githubusercontent.com/u/1?s=48" }] }
+      }
+    }
+  }
+}

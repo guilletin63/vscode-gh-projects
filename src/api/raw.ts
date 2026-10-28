@@ -179,3 +179,34 @@ export interface RawItemDetailResponse {
       | null;
   } | null;
 }
+
+export interface RawPerson {
+  id: string;
+  login: string;
+  avatarUrl?: string | null;
+}
+
+export interface RawChoiceLabel {
+  id: string;
+  name: string;
+  color: string;
+}
+
+type RawNodes<T> = { nodes: (T | null)[] | null } | null;
+
+export interface RawItemChoicesResponse {
+  viewer: RawPerson;
+  node: {
+    id: string;
+    project?: { repositories: RawNodes<{ assignableUsers: RawNodes<RawPerson> }> } | null;
+    content:
+      | {
+          __typename: string;
+          id?: string;
+          assignees?: RawNodes<RawPerson>;
+          labels?: RawNodes<RawChoiceLabel>;
+          repository?: { assignableUsers: RawNodes<RawPerson>; labels: RawNodes<RawChoiceLabel> } | null;
+        }
+      | null;
+  } | null;
+}

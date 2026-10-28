@@ -16,6 +16,16 @@ describe('parseWebviewMessage', () => {
     expect(parseWebviewMessage({ type: 'openExternal', url: 'javascript:alert(1)' })).toBeUndefined();
   });
 
+  it('validates label and assignee messages', () => {
+    expect(parseWebviewMessage({ type: 'loadChoices', itemId: 'I' })).toEqual({ type: 'loadChoices', itemId: 'I' });
+    expect(parseWebviewMessage({ type: 'setLabels', requestId: 'r', itemId: 'I', names: ['bug'] })).toEqual({ type: 'setLabels', requestId: 'r', itemId: 'I', names: ['bug'] });
+    expect(parseWebviewMessage({ type: 'setAssignees', requestId: 'r', itemId: 'I', logins: [] })).toEqual({ type: 'setAssignees', requestId: 'r', itemId: 'I', logins: [] });
+    expect(parseWebviewMessage({ type: 'setLabels', requestId: 'r', itemId: 'I', names: [1] })).toBeUndefined();
+    expect(parseWebviewMessage({ type: 'setLabels', requestId: 'r', itemId: 'I', names: 'bug' })).toBeUndefined();
+    expect(parseWebviewMessage({ type: 'setLabels', requestId: 'r', itemId: 'I', names: Array(101).fill('x') })).toBeUndefined();
+    expect(parseWebviewMessage({ type: 'setAssignees', requestId: 'r', itemId: 'I', logins: ['x'.repeat(300)] })).toBeUndefined();
+  });
+
   it('validates position and draft messages', () => {
     expect(parseWebviewMessage({ type: 'setPosition', requestId: 'r', itemId: 'I', afterId: 'A' })).toEqual({ type: 'setPosition', requestId: 'r', itemId: 'I', afterId: 'A' });
     expect(parseWebviewMessage({ type: 'setPosition', requestId: 'r', itemId: 'I' })).toEqual({ type: 'setPosition', requestId: 'r', itemId: 'I' });

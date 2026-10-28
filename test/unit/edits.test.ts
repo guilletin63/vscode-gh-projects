@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import type { GraphQLClient } from '../../src/api/client';
 import { GitHubProjectsApi } from '../../src/api/projectsApi';
 import { ADD_DRAFT_ISSUE_MUTATION, CLEAR_FIELD_VALUE_MUTATION, UPDATE_FIELD_VALUE_MUTATION, UPDATE_ITEM_POSITION_MUTATION } from '../../src/api/queries';
-import { PendingEdits, afterIdFor, isSameValue, moveItemAfter, setItemValue, toFieldValue, toGraphQLValue, validateInput } from '../../src/model/edits';
+import { PendingEdits, afterIdFor, isSameValue, moveItemAfter, setItemList, setItemValue, toFieldValue, toGraphQLValue, validateInput } from '../../src/model/edits';
 import type { ProjectField, ProjectItem } from '../../src/model/types';
 
 const status: ProjectField = {
@@ -196,6 +196,29 @@ describe('positions', () => {
     const edits = new PendingEdits();
     const move = edits.applyPosition(items, 'a', 'c');
     expect(ids(edits.revert(move.items, move.requestId))).toBe('abcd');
+  });
+});
+
+describe('labels and assignees', () => {
+  const bug = { name: 'bug', color: 'd73a4a' };
+  const docs = { name: 'documentation', color: '0075ca' };
+  const items = [{ ...card('a'), labels: [bug] }, card('b')];
+
+  it('setItemList replaces one list immutably and returns the previous one', () => {
+    const { items: next, previous } = setItemList(items, 'a', { key: 'labels', value: [docs] });
+    expect(next[0]?.labels).toEqual([docs]);
+    expect(items[0]?.labels).toEqual([bug]);
+    expect(next[1]).toBe(items[1]);
+    expect(previous).toEqual({ key: 'labels', value: [bug] });
+  });
+
+  it('applies, re-applies and rolls back a list edit', () => {
+    const edits = new PendingEdits();
+    const change = edits.applyList(items, 'b', { key: 'assignees', value: [{ login: 'octo-user' }] });
+    expect(change.items[1]?.assignees).toEqual([{ login: 'octo-user' }]);
+    expect(edits.reapply(items)[1]?.assignees).toEqual([{ login: 'octo-user' }]);
+    expect(edits.revert(change.items, change.requestId)[1]?.assignees).toEqual([]);
+    expect(edits.size).toBe(0);
   });
 });
 

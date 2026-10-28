@@ -1,0 +1,31 @@
+{
+  "data": {
+    "viewer": { "id": "U_viewer", "login": "octo-user", "avatarUrl": "https://avatars.githubusercontent.com/u/1?s=48" },
+    "node": {
+      "id": "PVTI_issue",
+      "project": { "repositories": { "nodes": [] } },
+      "content": {
+        "__typename": "Issue",
+        "id": "I_issue",
+        "assignees": { "nodes": [{ "id": "U_former", "login": "former-member", "avatarUrl": null }] },
+        "labels": { "nodes": [{ "id": "LA_milestone", "name": "milestone", "color": "5319e7" }] },
+        "repository": {
+          "assignableUsers": {
+            "nodes": [
+              { "id": "U_viewer", "login": "octo-user", "avatarUrl": "https://avatars.githubusercontent.com/u/1?s=48" },
+              { "id": "U_friend", "login": "Friend", "avatarUrl": "https://avatars.githubusercontent.com/u/2?s=48" }
+            ]
+          },
+          "labels": {
+            "nodes": [
+              { "id": "LA_bug", "name": "bug", "color": "d73a4a" },
+              { "id": "LA_docs", "name": "documentation", "color": "0075ca" },
+              { "id": "LA_milestone", "name": "milestone", "color": "5319e7" },
+              null
+            ]
+          }
+        }
+      }
+    }
+  }
+}

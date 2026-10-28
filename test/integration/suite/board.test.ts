@@ -1,11 +1,11 @@
 import * as assert from 'node:assert';
 import * as vscode from 'vscode';
-import { createFakeApi, detailRequests, drafts, failures, filterQueries, items, positions, projects, writes } from './fakeApi';
+import { createFakeApi, detailRequests, drafts, failures, filterQueries, items, listWrites, positions, projects, writes } from './fakeApi';
 
 interface Board {
   projectId: string;
   current?: {
-    items: { id: string; fieldValues: Record<string, { optionId?: string }> }[];
+    items: { id: string; fieldValues: Record<string, { optionId?: string }>; labels: { name: string }[]; assignees: { login: string }[] }[];
     viewId?: string;
     filter: { text: string; labels: string[] };
     viewMatches?: { viewId: string; itemIds?: string[]; error?: string };
@@ -18,6 +18,7 @@ interface Board {
   setPosition(requestId: string, itemId: string, afterId: string | undefined): Promise<boolean>;
   addDraft(requestId: string, title: string, values?: { fieldId: string; input: unknown }[]): Promise<boolean>;
   loadDetail(itemId: string): Promise<void>;
+  setList(requestId: string, itemId: string, key: 'labels' | 'assignees', values: string[]): Promise<boolean>;
   openInPrExtension(itemId: string): Promise<boolean>;
   panel: vscode.WebviewPanel;
 }
@@ -117,6 +118,28 @@ suite('board webview', () => {
     assert.strictEqual(await board.setPosition('p3', 'PVTI_1', undefined), false);
     assert.deepStrictEqual(ids(), ['PVTI_2', 'PVTI_0', 'PVTI_3', 'PVTI_1'], 'host order unchanged');
     assert.strictEqual(await board.setPosition('p4', 'PVTI_1', 'gone'), false, 'unknown afterId is rejected');
+    board.panel.dispose();
+  });
+
+  test('sets labels and assignees one edit at a time per item', async () => {
+    const project = projects['octo-user']?.[0];
+    const board = (await vscode.commands.executeCommand('ghProjects.openBoard', { project })) as Board;
+    await board.refresh();
+    const item = () => board.current?.items.find((i) => i.id === 'PVTI_4');
+    listWrites.length = 0;
+    // Adding then removing a label quickly must not end with the label added.
+    const [added, removed] = await Promise.all([board.setList('l1', 'PVTI_4', 'labels', ['bug']), board.setList('l2', 'PVTI_4', 'labels', [])]);
+    assert.ok(added && removed);
+    assert.deepStrictEqual(listWrites, ['start PVTI_4 bug', 'end PVTI_4 bug', 'start PVTI_4 ', 'end PVTI_4 ']);
+    assert.deepStrictEqual(item()?.labels, []);
+
+    assert.strictEqual(await board.setList('l3', 'PVTI_4', 'assignees', ['octo-user', 'friend']), true);
+    assert.deepStrictEqual(item()?.assignees, [{ login: 'octo-user' }, { login: 'friend' }]);
+
+    failures.next = true;
+    assert.strictEqual(await board.setList('l4', 'PVTI_4', 'labels', ['documentation']), false);
+    assert.deepStrictEqual(item()?.labels, [], 'labels unchanged after a failure');
+    assert.strictEqual(await board.setList('l5', 'gone', 'labels', ['bug']), false);
     board.panel.dispose();
   });
 

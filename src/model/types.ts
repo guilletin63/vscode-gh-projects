@@ -156,6 +156,22 @@ export interface ProjectDetails {
   views: ProjectView[];
 }
 
+/** Labels and assignees an item can take, with the node ids GitHub's mutations need. */
+export interface ItemChoices {
+  itemId: string;
+  /** Issue, pull request or draft the mutations act on. */
+  contentId: string;
+  contentType: 'Issue' | 'PullRequest' | 'DraftIssue';
+  /** Drafts have no labels. */
+  labelable: boolean;
+  /** The repository's labels (and any the item already has), by name. */
+  labels: (Label & { id: string })[];
+  /** People the item can be assigned to (and anyone already assigned), by login. */
+  assignees: (User & { id: string })[];
+  /** Ids of the item's current labels and assignees. */
+  current: { labels: string[]; assignees: string[] };
+}
+
 /** Extra data shown in the detail panel, fetched on demand. */
 export interface ItemDetail {
   itemId: string;

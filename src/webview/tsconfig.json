@@ -4,5 +4,5 @@
     "lib": ["ES2022", "DOM", "DOM.Iterable"],
     "types": []
   },
-  "include": ["./**/*.ts", "../shared/**/*.ts", "../model/**/*.ts", "../../test/unit/sanitize.test.ts", "../../test/unit/sortable.test.ts"]
+  "include": ["./**/*.ts", "../shared/**/*.ts", "../model/**/*.ts", "../../test/unit/sanitize.test.ts", "../../test/unit/sortable.test.ts", "../../test/unit/choiceMenu.test.ts"]
 }

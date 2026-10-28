@@ -2,7 +2,8 @@ import * as vscode from 'vscode';
 import type { ProjectsApi } from '../../api/projectsApi';
 import { defaultView } from '../../model/board';
 import type { FieldInput } from '../../model/edits';
-import { moveItemAfter, setItemValue, toFieldValue, validateInput } from '../../model/edits';
+import type { ListEdit } from '../../model/edits';
+import { moveItemAfter, setItemList, setItemValue, toFieldValue, validateInput } from '../../model/edits';
 import type { BoardFilter } from '../../model/filter';
 import { normalizeFilter } from '../../model/filter';
 import type { ProjectSummary } from '../../model/types';
@@ -44,6 +45,8 @@ export class BoardPanel implements vscode.Disposable {
   private state: BoardState | undefined;
   private loading: Promise<void> | undefined;
   private matching: { loadedAt: string; viewId: string; request: Promise<NonNullable<BoardState['viewMatches']>> } | undefined;
+  /** Label and assignee edits run one at a time per item: each starts from GitHub's result of the last. */
+  private readonly listEdits = new Map<string, Promise<unknown>>();
   private readonly disposables: vscode.Disposable[] = [];
 
   static open(deps: BoardDeps, project: PersistedBoard['project'], viewId?: string): BoardPanel {
@@ -254,6 +257,48 @@ export class BoardPanel implements vscode.Disposable {
     }
   }
 
+  async loadChoices(itemId: string): Promise<void> {
+    try {
+      const choices = await this.deps.getApi().getItemChoices(itemId);
+      this.post({ type: 'choices', itemId, choices });
+    } catch (err) {
+      this.post({ type: 'choicesError', itemId, message: reportError('Loading labels and assignees', err) });
+    }
+  }
+
+  /** Sets the labels (by name) or assignees (by login) of an item; the webview already shows them. */
+  setList(requestId: string, itemId: string, key: ListEdit['key'], values: string[]): Promise<boolean> {
+    const previous = this.listEdits.get(itemId) ?? Promise.resolve();
+    const next = previous.then(() => this.writeList(requestId, itemId, key, values));
+    this.listEdits.set(itemId, next);
+    void next.finally(() => {
+      if (this.listEdits.get(itemId) === next) this.listEdits.delete(itemId);
+    });
+    return next;
+  }
+
+  private async writeList(requestId: string, itemId: string, key: ListEdit['key'], values: string[]): Promise<boolean> {
+    const item = this.state?.items.find((i) => i.id === itemId);
+    if (!item) {
+      this.post({ type: 'editResult', requestId, ok: false, message: 'The board changed; refresh and try again.' });
+      return false;
+    }
+    const api = this.deps.getApi();
+    try {
+      const edit: ListEdit =
+        key === 'labels' ? { key, value: await api.setLabels(itemId, values) } : { key, value: await api.setAssignees(itemId, values) };
+      if (this.state) this.state = { ...this.state, items: setItemList(this.state.items, itemId, edit).items };
+      this.post({ type: 'editResult', requestId, ok: true });
+      BoardPanel.loaded.fire(this);
+      return true;
+    } catch (err) {
+      const message = reportError(`Updating the ${key} of ${item.title}`, err);
+      this.post({ type: 'editResult', requestId, ok: false, message });
+      void vscode.window.showWarningMessage(`Could not update "${item.title}": ${message} The change was reverted.`);
+      return false;
+    }
+  }
+
   async loadDetail(itemId: string): Promise<void> {
     try {
       const detail = await this.deps.getApi().getItemDetail(itemId);
@@ -342,6 +387,15 @@ export class BoardPanel implements vscode.Disposable {
         return;
       case 'openDetail':
         void this.loadDetail(msg.itemId);
+        return;
+      case 'loadChoices':
+        void this.loadChoices(msg.itemId);
+        return;
+      case 'setLabels':
+        void this.setList(msg.requestId, msg.itemId, 'labels', msg.names);
+        return;
+      case 'setAssignees':
+        void this.setList(msg.requestId, msg.itemId, 'assignees', msg.logins);
         return;
       case 'copyLink':
         void vscode.env.clipboard.writeText(msg.url).then(() => vscode.window.setStatusBarMessage('$(check) Link copied', 3000));

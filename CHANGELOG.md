@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+- **Edit assignees and labels** from the item details: **Edit** opens a searchable list of the
+  repository's labels and assignable people. Drafts take assignees (from the project's linked
+  repositories, and you). Changes show at once and are rolled back if GitHub rejects them.
+
 ## 1.3.0
 
 - **Projects shared with you** show up in the tree: owners of projects linked to repositories you

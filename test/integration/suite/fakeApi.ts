@@ -67,12 +67,41 @@ export const failures = { next: false };
 export const filterQueries: string[] = [];
 
 export const detailRequests: string[] = [];
+/** Label and assignee writes, in the order GitHub received them (`start` / `end` of each). */
+export const listWrites: string[] = [];
 
 export function createFakeApi() {
   return {
     getItemDetail: async (itemId: string) => {
       detailRequests.push(itemId);
       return { itemId, bodyHTML: '<p>Body</p>', comments: 1 };
+    },
+    getItemChoices: async (itemId: string) => ({
+      itemId,
+      contentId: `I_${itemId}`,
+      contentType: 'Issue',
+      labelable: true,
+      labels: [
+        { id: 'LA_bug', name: 'bug', color: 'd73a4a' },
+        { id: 'LA_docs', name: 'documentation', color: '0075ca' },
+      ],
+      assignees: [{ id: 'U_1', login: 'octo-user' }],
+      current: { labels: [], assignees: ['U_1'] },
+    }),
+    setLabels: async (itemId: string, names: string[]) => {
+      listWrites.push(`start ${itemId} ${names.join(',')}`);
+      // Slow enough that a second edit would overtake this one if they ran together.
+      await new Promise((r) => setTimeout(r, names.length ? 50 : 0));
+      listWrites.push(`end ${itemId} ${names.join(',')}`);
+      if (failures.next) {
+        failures.next = false;
+        throw new Error('Simulated GitHub failure');
+      }
+      return names.map((name) => ({ name, color: 'd73a4a' }));
+    },
+    setAssignees: async (itemId: string, logins: string[]) => {
+      listWrites.push(`assign ${itemId} ${logins.join(',')}`);
+      return logins.map((login) => ({ login }));
     },
     setFieldValue: async (_projectId: string, itemId: string, fieldId: string, input: unknown) => {
       if (failures.next) {

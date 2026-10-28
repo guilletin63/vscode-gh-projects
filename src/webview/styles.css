@@ -720,6 +720,44 @@ input.search::placeholder {
   color: var(--vscode-descriptionForeground);
 }
 
+.detail-section-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.detail-section-head h3 {
+  margin: 0;
+}
+
+.choice-menu .menu {
+  left: auto;
+  right: 0;
+  width: 260px;
+  max-height: 360px;
+}
+
+.choice-menu .search {
+  width: 100%;
+  box-sizing: border-box;
+  margin-bottom: 4px;
+}
+
+.choice-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.choice-list li.muted,
+.choice-list li.error-text,
+.choice-note {
+  padding: 3px 6px;
+  margin: 0;
+}
+
 .detail-field {
   display: grid;
   grid-template-columns: 120px 1fr;

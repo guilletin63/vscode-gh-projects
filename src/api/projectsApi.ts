@@ -1,21 +1,28 @@
 // High-level operations used by the views. The only place that combines queries + mappers.
 import type { FieldInput } from '../model/edits';
 import { toGraphQLValue } from '../model/edits';
-import type { ItemDetail, Owner, ProjectDetails, ProjectItem, ProjectSummary, ProjectView } from '../model/types';
+import { MAX_ASSIGNEES, planListChange } from '../model/assign';
+import type { ItemChoices, ItemDetail, Label, Owner, ProjectDetails, ProjectItem, ProjectSummary, ProjectView, User } from '../model/types';
 import type { GraphQLClient } from './client';
 import { GraphQLError } from './client';
-import { mapItemDetail, mapItems, mapOwnerLookup, mapProjectDetails, mapProjects, mapSharedOwners, mapViewer, mapViews } from './mappers';
+import { mapItemChoices, mapItemDetail, mapItems, mapOwnerLookup, mapProjectDetails, mapProjects, mapSharedOwners, mapViewer, mapViews } from './mappers';
 import { paginate } from './paginate';
 import {
+  ADD_ASSIGNEES_MUTATION,
   ADD_DRAFT_ISSUE_MUTATION,
+  ADD_LABELS_MUTATION,
   CLEAR_FIELD_VALUE_MUTATION,
+  ITEM_CHOICES_QUERY,
   ITEM_DETAIL_QUERY,
   OWNER_LOOKUP_QUERY,
   PROJECT_DETAILS_QUERY,
   PROJECT_ITEM_IDS_QUERY,
   PROJECT_ITEMS_QUERY,
   PROJECTS_QUERY,
+  REMOVE_ASSIGNEES_MUTATION,
+  REMOVE_LABELS_MUTATION,
   SHARED_OWNERS_QUERY,
+  UPDATE_DRAFT_ASSIGNEES_MUTATION,
   UPDATE_FIELD_VALUE_MUTATION,
   UPDATE_ITEM_POSITION_MUTATION,
   VIEWER_ONLY_QUERY,
@@ -23,6 +30,7 @@ import {
   VIEWS_QUERY,
 } from './queries';
 import type {
+  RawItemChoicesResponse,
   RawItemDetailResponse,
   RawItemsResponse,
   RawOwnerLookupResponse,
@@ -64,6 +72,12 @@ export interface ProjectsApi {
   addDraftIssue(projectId: string, title: string): Promise<string>;
   /** Body and metadata of one item for the detail panel. */
   getItemDetail(itemId: string): Promise<ItemDetail>;
+  /** Labels and people the item can take. */
+  getItemChoices(itemId: string): Promise<ItemChoices>;
+  /** Sets the item's labels by name and returns them. Needs the `repo` scope. */
+  setLabels(itemId: string, names: string[]): Promise<Label[]>;
+  /** Sets the item's assignees by login and returns them. Needs the `repo` and `project` scopes. */
+  setAssignees(itemId: string, logins: string[]): Promise<User[]>;
 }
 
 export class GitHubProjectsApi implements ProjectsApi {
@@ -184,5 +198,41 @@ export class GitHubProjectsApi implements ProjectsApi {
     const detail = mapItemDetail(await this.client.request<RawItemDetailResponse>(ITEM_DETAIL_QUERY, { itemId }));
     if (!detail) throw new Error('Item not found or not accessible.');
     return detail;
+  }
+
+  async getItemChoices(itemId: string): Promise<ItemChoices> {
+    const choices = mapItemChoices(await this.client.request<RawItemChoicesResponse>(ITEM_CHOICES_QUERY, { itemId }));
+    if (!choices) throw new Error('Only issues, pull requests and drafts have labels and assignees.');
+    return choices;
+  }
+
+  // Each change starts from GitHub's current values, so edits made elsewhere are kept.
+  async setLabels(itemId: string, names: string[]): Promise<Label[]> {
+    const choices = await this.getItemChoices(itemId);
+    if (!choices.labelable) throw new Error('Drafts have no labels.');
+    const plan = planListChange(choices.labels, choices.current.labels, names, (l) => l.name);
+    if ('error' in plan) throw new Error(plan.error);
+    const id = choices.contentId;
+    if (plan.add.length) await this.client.request(ADD_LABELS_MUTATION, { id, labelIds: plan.add }, { write: true });
+    if (plan.remove.length) await this.client.request(REMOVE_LABELS_MUTATION, { id, labelIds: plan.remove }, { write: true });
+    return plan.ids.flatMap((labelId) => choices.labels.filter((l) => l.id === labelId)).map((l) => ({ name: l.name, color: l.color }));
+  }
+
+  async setAssignees(itemId: string, logins: string[]): Promise<User[]> {
+    const choices = await this.getItemChoices(itemId);
+    const plan = planListChange(choices.assignees, choices.current.assignees, logins, (u) => u.login, MAX_ASSIGNEES);
+    if ('error' in plan) throw new Error(plan.error);
+    const id = choices.contentId;
+    if (choices.contentType === 'DraftIssue') {
+      if (plan.add.length || plan.remove.length) {
+        await this.client.request(UPDATE_DRAFT_ASSIGNEES_MUTATION, { id, assigneeIds: plan.ids }, { write: true });
+      }
+    } else {
+      if (plan.add.length) await this.client.request(ADD_ASSIGNEES_MUTATION, { id, assigneeIds: plan.add }, { write: true });
+      if (plan.remove.length) await this.client.request(REMOVE_ASSIGNEES_MUTATION, { id, assigneeIds: plan.remove }, { write: true });
+    }
+    return plan.ids
+      .flatMap((userId) => choices.assignees.filter((u) => u.id === userId))
+      .map((u) => ({ login: u.login, ...(u.avatarUrl ? { avatarUrl: u.avatarUrl } : {}) }));
   }
 }

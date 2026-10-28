@@ -138,6 +138,44 @@ export const scenarios = {
       { wait: 2000 },
     ],
   },
+  // Read-only: an issue's detail with the Labels menu open.
+  'detail-labels': {
+    needsToken: true,
+    steps: [
+      { command: 'ghProjects.openBoard', args: [{ project: SANDBOX, viewId: 'PVTV_lAHOBCq4Uc4BoSUHzgMMTSw' }] },
+      { command: 'workbench.action.closeSidebar' },
+    ],
+    waitFor: webviewShown,
+    actions: [
+      { webview: `(doc) => { const r = [...doc.querySelectorAll('.item-row')].find((x) => x.textContent.includes('M6:')); if (!r) return false; r.click(); return true; }` },
+      { webview: "(doc) => { const s = doc.querySelector('[data-menu=\"choices:labels\"] summary'); if (!s) return false; s.click(); return true; }" },
+      { webview: "(doc) => doc.querySelectorAll('[data-menu=\"choices:labels\"] input[type=checkbox]').length > 0" },
+      { wait: 1500 },
+    ],
+  },
+  // WRITES to the sandbox: adds the "documentation" label to M6 from its Labels menu.
+  'sandbox-labels': {
+    needsToken: true,
+    steps: [
+      { command: 'ghProjects.openBoard', args: [{ project: SANDBOX, viewId: 'PVTV_lAHOBCq4Uc4BoSUHzgMMTSw' }] },
+      { command: 'workbench.action.closeSidebar' },
+    ],
+    waitFor: webviewShown,
+    actions: [
+      { webview: `(doc) => { const r = [...doc.querySelectorAll('.item-row')].find((x) => x.textContent.includes('M6:')); if (!r) return false; r.click(); return true; }` },
+      { webview: "(doc) => { const s = doc.querySelector('[data-menu=\"choices:labels\"] summary'); if (!s) return false; s.click(); return true; }" },
+      {
+        webview: `(doc) => {
+          const box = [...doc.querySelectorAll('[data-menu="choices:labels"] label')].find((l) => l.textContent === 'documentation')?.querySelector('input');
+          if (!box) return false;
+          box.click();
+          return true;
+        }`,
+      },
+      { webview: "(doc) => [...doc.querySelectorAll('.detail .label')].some((l) => l.textContent === 'documentation')" },
+      { wait: 4000 },
+    ],
+  },
   // WRITES to the sandbox: table grouped by Status, drags a Todo draft into "In Progress".
   'sandbox-table-drag': {
     needsToken: true,

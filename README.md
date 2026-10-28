@@ -29,8 +29,8 @@ views you see at `github.com/users/<owner>/projects/<n>`, with cards you can mov
   that column's or group's value.
 - **Filters and search**: text search (`#123`, repository, labels…) plus label, assignee and any
   single-select field. Filters are remembered per project and workspace.
-- **Item details**: the issue or pull request body, its project fields (editable), labels and
-  assignees, with **Open on GitHub**, **Copy link** and, if the
+- **Item details**: the issue or pull request body, its project fields, labels and assignees,
+  all editable, with **Open on GitHub**, **Copy link** and, if the
   [GitHub Pull Requests](https://marketplace.visualstudio.com/items?itemName=GitHub.vscode-pull-request-github)
   extension is installed, **Open in GitHub Pull Requests**.
 - **Refresh** on demand, optional polling and a status bar counter of the items assigned to you
@@ -121,8 +121,9 @@ AND. Filters are remembered per project.
 
 ### 6. Item details
 
-Click a card (or a table row, or a roadmap bar) to read its description and edit its project fields. **Open on GitHub** and
-**Copy link** are one click away.
+Click a card (or a table row, or a roadmap bar) to read its description and edit its project fields. **Edit** next to
+Labels and Assignees opens a searchable list of the repository's labels and the people who can be assigned (drafts take
+assignees only, like on github.com). **Open on GitHub** and **Copy link** are one click away.
 
 ![Item details](docs/media/item-detail.gif)
 
@@ -157,7 +158,9 @@ Click a card (or a table row, or a roadmap bar) to read its description and edit
 ## Known limitations
 
 - Tables don't show the Reviewers and Tracks / Tracked by fields; the table says which fields it
-  leaves out. Built-in fields (assignees, labels…) are edited on GitHub.
+  leaves out. Assignees and labels are edited from the item details; other built-in fields
+  (milestone, reviewers…) are edited on GitHub.
+- The assignee and label lists show the first 100 assignable people and labels of the repository.
 - Sorted views have no manual order, like on github.com: reordering is off while a sort applies.
 - Roadmap bars that use an iteration field can't be dragged; change the iteration from the
   table or the item details.

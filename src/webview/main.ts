@@ -1,15 +1,17 @@
 // Board webview. Renders the BoardState sent by the extension; never talks to the network.
 import { NO_VALUE_COLUMN, buildColumns, cardFields, resolveGroupField } from '../model/board';
 import type { Column } from '../model/board';
-import type { FieldInput } from '../model/edits';
+import { MAX_ASSIGNEES } from '../model/assign';
+import type { FieldInput, ListEdit } from '../model/edits';
 import { PendingEdits, afterIdFor, isSameValue } from '../model/edits';
 import type { BoardFilter } from '../model/filter';
 import { applyFilter, buildFacets } from '../model/filter';
 import { canDragDates, dateEdits, dateFields, dayNumber, isoDay, resolveDateSource } from '../model/roadmap';
 import type { DateSource, Span } from '../model/roadmap';
 import { fieldSum, groupInput, groupItems, groupableFields, sortItems } from '../model/table';
-import type { FieldValue, ItemDetail, ProjectField, ProjectItem, ProjectView, ViewSort } from '../model/types';
+import type { FieldValue, ItemChoices, ItemDetail, ProjectField, ProjectItem, ProjectView, ViewSort } from '../model/types';
 import type { BoardState, HostMessage, WebviewMessage } from '../shared/protocol';
+import { choiceMenu, toggleValue } from './choiceMenu';
 import { h, icons } from './dom';
 import { detailPanel } from './detail';
 import { filterBar } from './filterBar';
@@ -37,6 +39,8 @@ interface UiState {
   banner?: string;
   openMenu?: string;
   detail?: { itemId: string; detail?: ItemDetail; error?: string };
+  /** Labels and people the open item can take (for its edit menus), and the menu's search. */
+  choices?: { itemId: string; choices?: ItemChoices; error?: string; query: string };
   prExtension?: boolean;
   /** Table cell being edited in place; `focus` asks the next render to focus its editor. */
   editing?: { itemId: string; fieldId: string; focus?: boolean };
@@ -174,6 +178,73 @@ function editField(itemId: string, field: ProjectField, input: FieldInput): void
   render();
 }
 
+/** Adds or removes one label or assignee: shown immediately, rolled back if GitHub rejects it. */
+function toggleListValue(item: ProjectItem, key: ListEdit['key'], value: string): void {
+  const board = ui.board;
+  const choices = ui.choices?.itemId === item.id ? ui.choices.choices : undefined;
+  if (!board || !choices) return;
+  if (key === 'labels') {
+    const names = toggleValue(item.labels.map((l) => l.name), value);
+    const labels = names.flatMap(
+      (n) => item.labels.find((l) => l.name === n) ?? choices.labels.filter((l) => l.name === n).map(({ name, color }) => ({ name, color })),
+    );
+    const { requestId, items } = pending.applyList(board.items, item.id, { key, value: labels });
+    ui.board = { ...board, items };
+    send({ type: 'setLabels', requestId, itemId: item.id, names });
+  } else {
+    const logins = toggleValue(item.assignees.map((u) => u.login), value);
+    const users = logins.flatMap(
+      (l) =>
+        item.assignees.find((u) => u.login === l) ??
+        choices.assignees.filter((u) => u.login === l).map(({ login, avatarUrl }) => ({ login, ...(avatarUrl ? { avatarUrl } : {}) })),
+    );
+    const { requestId, items } = pending.applyList(board.items, item.id, { key, value: users });
+    ui.board = { ...board, items };
+    send({ type: 'setAssignees', requestId, itemId: item.id, logins });
+  }
+  render();
+}
+
+/** The "Edit" menu of the item details for its labels or assignees. */
+function listMenu(item: ProjectItem, key: ListEdit['key']): HTMLElement | null {
+  if (item.type === 'Redacted' || (key === 'labels' && item.type === 'DraftIssue')) return null;
+  const menuKey = `choices:${key}`;
+  const loaded = ui.choices?.itemId === item.id ? ui.choices : undefined;
+  const choices = loaded?.choices;
+  const options =
+    key === 'labels'
+      ? choices?.labels.map((l) => ({ value: l.name, label: l.name, color: l.color }))
+      : choices?.assignees.map((u) => ({ value: u.login, label: u.login, ...(u.avatarUrl ? { avatarUrl: u.avatarUrl } : {}) }));
+  return choiceMenu({
+    menuKey,
+    title: key === 'labels' ? 'Labels' : 'Assignees',
+    open: ui.openMenu === menuKey,
+    ...(options ? { options } : {}),
+    ...(loaded?.error ? { error: loaded.error } : {}),
+    selected: key === 'labels' ? item.labels.map((l) => l.name) : item.assignees.map((u) => u.login),
+    query: ui.openMenu === menuKey ? (loaded?.query ?? '') : '',
+    ...(key === 'assignees' ? { max: MAX_ASSIGNEES } : {}),
+    onOpen: (open) => {
+      if (!open) {
+        if (ui.openMenu === menuKey) ui.openMenu = undefined;
+      } else {
+        ui.openMenu = menuKey;
+        // Fetched every time the menu opens: labels and collaborators change on GitHub.
+        ui.choices = { ...(loaded ?? { itemId: item.id }), query: '' };
+        delete ui.choices.error;
+        send({ type: 'loadChoices', itemId: item.id });
+      }
+      render();
+      if (open) app.querySelector<HTMLElement>(`[data-menu="${menuKey}"] input`)?.focus();
+    },
+    onQuery: (query) => {
+      if (ui.choices) ui.choices = { ...ui.choices, query };
+      render();
+    },
+    onToggle: (value) => toggleListValue(item, key, value),
+  });
+}
+
 /** Moves an item in the project order: shown immediately, rolled back if GitHub rejects it. */
 function setPosition(itemId: string, afterId: string | undefined): void {
   const board = ui.board;
@@ -274,6 +345,7 @@ function setSpan(itemId: string, span: Span, source: DateSource): void {
 function openDetail(itemId: string): void {
   ui.detail = { itemId };
   ui.openMenu = undefined;
+  ui.choices = undefined;
   send({ type: 'openDetail', itemId });
   render();
   app.querySelector<HTMLElement>('.detail')?.focus();
@@ -343,6 +415,12 @@ window.addEventListener('message', (event: MessageEvent<HostMessage>) => {
       break;
     case 'detailError':
       if (ui.detail?.itemId === msg.itemId) ui.detail = { itemId: msg.itemId, error: msg.message };
+      break;
+    case 'choices':
+      if (ui.choices?.itemId === msg.itemId) ui.choices = { itemId: msg.itemId, choices: msg.choices, query: ui.choices.query };
+      break;
+    case 'choicesError':
+      if (ui.choices?.itemId === msg.itemId) ui.choices = { ...ui.choices, error: msg.message };
       break;
     case 'rateLimit': {
       const seconds = Math.ceil(msg.waitMs / 1000);
@@ -501,6 +579,8 @@ function view(): Node[] {
         onOpenExternal: (url) => send({ type: 'openExternal', url }),
         onCopyLink: (url) => send({ type: 'copyLink', url }),
         onOpenInPrExtension: () => send({ type: 'openInPrExtension', itemId: detailItem.id }),
+        labelMenu: listMenu(detailItem, 'labels'),
+        assigneeMenu: listMenu(detailItem, 'assignees'),
       }),
     );
   }
