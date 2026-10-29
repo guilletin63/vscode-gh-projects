@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 1.4.0
 
 - **Edit assignees and labels** from the item details: **Edit** opens a searchable list of the
   repository's labels and assignable people. Drafts take assignees (from the project's linked

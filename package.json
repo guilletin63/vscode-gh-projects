@@ -2,7 +2,7 @@
   "name": "vscode-gh-projects",
   "displayName": "GitHub Projects in VS Code",
   "description": "GitHub Projects (v2) inside VS Code: board, table and roadmap views, drag & drop, filters, item details and an in-progress counter.",
-  "version": "1.3.0",
+  "version": "1.4.0",
   "publisher": "guilletin63",
   "license": "MIT",
   "icon": "media/icon.png",
