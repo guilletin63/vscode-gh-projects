@@ -2,9 +2,10 @@
 // `waitFor` expression evaluated in the workbench renderer and optional `actions`.
 // Every scenario targets the sandbox project (writes included). Point SANDBOX at your own
 // throw-away project before running them.
+import { jsString } from './cdp.mjs';
 
 const treeRow = (label) =>
-  `[...document.querySelectorAll('.monaco-list-row')].find((r) => r.getAttribute('aria-label')?.startsWith(${JSON.stringify(label)}))`;
+  `[...document.querySelectorAll('.monaco-list-row')].find((r) => r.getAttribute('aria-label')?.startsWith(${jsString(label)}))`;
 
 /** Expands a tree row by clicking its twistie (monaco lists react to mouse events). */
 const expandRow = (label) => `(() => {
@@ -25,11 +26,11 @@ export const SANDBOX = {
 
 /** Webview action: opens the "Move" menu of the card titled `title` and picks column `to`. */
 const moveCard = (title, to) => `(doc) => {
-  const card = [...doc.querySelectorAll('.card')].find((c) => c.querySelector('.card-title')?.textContent?.includes(${JSON.stringify(title)}));
+  const card = [...doc.querySelectorAll('.card')].find((c) => c.querySelector('.card-title')?.textContent?.includes(${jsString(title)}));
   if (!card) return false;
   const menu = card.querySelector('.move-menu');
   menu.open = true;
-  const item = [...menu.querySelectorAll('.menu-item')].find((b) => b.textContent === ${JSON.stringify(to)});
+  const item = [...menu.querySelectorAll('.menu-item')].find((b) => b.textContent === ${jsString(to)});
   if (!item || item.disabled) return false;
   item.click();
   return true;
@@ -37,8 +38,8 @@ const moveCard = (title, to) => `(doc) => {
 
 /** Webview action: picks `option` in the toolbar select labelled `label`. */
 const pick = (label, option) => `(doc) => {
-  const select = doc.querySelector('.toolbar select[aria-label=${JSON.stringify(label)}]');
-  const o = select && [...select.options].find((x) => x.textContent === ${JSON.stringify(option)});
+  const select = doc.querySelector('.toolbar select[aria-label=${jsString(label)}]');
+  const o = select && [...select.options].find((x) => x.textContent === ${jsString(option)});
   if (!o) return false;
   select.value = o.value;
   select.dispatchEvent(new Event('change', { bubbles: true }));
@@ -47,8 +48,8 @@ const pick = (label, option) => `(doc) => {
 
 /** Webview action: drags the table row titled `title` into the group named `group`. */
 const dragRow = (title, group) => `(doc) => {
-  const row = [...doc.querySelectorAll('.item-row')].find((r) => r.textContent.includes(${JSON.stringify(title)}));
-  const target = [...doc.querySelectorAll('tbody[data-group-id]')].find((b) => b.querySelector('.group-name')?.textContent === ${JSON.stringify(group)});
+  const row = [...doc.querySelectorAll('.item-row')].find((r) => r.textContent.includes(${jsString(title)}));
+  const target = [...doc.querySelectorAll('tbody[data-group-id]')].find((b) => b.querySelector('.group-name')?.textContent === ${jsString(group)});
   if (!row || !target) return false;
   const dt = new DataTransfer();
   row.dispatchEvent(new DragEvent('dragstart', { bubbles: true, dataTransfer: dt }));

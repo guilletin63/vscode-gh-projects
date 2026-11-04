@@ -1,5 +1,14 @@
 // Minimal Chrome DevTools Protocol client (Node >= 22 global WebSocket). Used by the screenshot
 // harness to drive and capture the Extension Development Host window without OS permissions.
+
+/**
+ * `value` as a JavaScript string literal, for strings spliced into code that `evaluate` runs.
+ * Unlike plain JSON.stringify, `<`, `>`, `/`, U+2028 and U+2029 are escaped too.
+ */
+export function jsString(value) {
+  return JSON.stringify(String(value)).replace(/[<>/\u2028\u2029]/g, (c) => `\\u${c.charCodeAt(0).toString(16).padStart(4, '0')}`);
+}
+
 export async function connectToWorkbench(port, { timeoutMs = 60000 } = {}) {
   const deadline = Date.now() + timeoutMs;
   for (;;) {
