@@ -4,7 +4,7 @@
 // never lets start; this can. WRITES to the sandbox (moves one item).
 //
 //   node scripts/drag-check.mjs "Draft: empty column copy" "In Progress" [--table]
-import { connectToWebview } from './cdp.mjs';
+import { connectToWebview, jsString } from './cdp.mjs';
 import { launchDevHost } from './devhost.mjs';
 import { SANDBOX } from './scenarios.mjs';
 
@@ -61,13 +61,13 @@ try {
   await sleep(1500);
   // Where the item is and where it goes, in webview coordinates.
   const where = `(doc) => {
-    const item = [...doc.querySelectorAll('.card, .item-row')].find((el) => (el.querySelector('.card-title, .row-title')?.textContent ?? '') === ${JSON.stringify(title)});
+    const item = [...doc.querySelectorAll('.card, .item-row')].find((el) => (el.querySelector('.card-title, .row-title')?.textContent ?? '') === ${jsString(title)});
     const group = (el) => el?.closest('.column, tbody')?.querySelector('h2, .group-name')?.textContent;
     return { item, group, doc };
   }`;
   const rects = await wv.evaluate(`(doc) => {
     const { item, group } = (${where})(doc);
-    const dest = [...doc.querySelectorAll('.column, tbody[data-group-id]')].find((el) => el.querySelector('h2, .group-name')?.textContent === ${JSON.stringify(target)});
+    const dest = [...doc.querySelectorAll('.column, tbody[data-group-id]')].find((el) => el.querySelector('h2, .group-name')?.textContent === ${jsString(target)});
     if (!item || !dest) return null;
     const a = item.getBoundingClientRect();
     const b = (dest.querySelector('.group-row') ?? dest).getBoundingClientRect();

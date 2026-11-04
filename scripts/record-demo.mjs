@@ -15,7 +15,7 @@ import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join, resolve, dirname } from 'node:path';
 import { parseArgs } from 'node:util';
-import { connectToWebview } from './cdp.mjs';
+import { connectToWebview, jsString } from './cdp.mjs';
 import { launchDevHost } from './devhost.mjs';
 import { SANDBOX } from './scenarios.mjs';
 
@@ -149,13 +149,13 @@ async function session({ steps }) {
     async typeIn(fnSource, text, delay = 120) {
       const wv = await api.webview();
       for (const ch of text) {
-        await wv.evaluate(`(doc) => { const el = (${fnSource})(doc); el.value += ${JSON.stringify(ch)}; el.dispatchEvent(new Event('input', { bubbles: true })); return true; }`);
+        await wv.evaluate(`(doc) => { const el = (${fnSource})(doc); el.value += ${jsString(ch)}; el.dispatchEvent(new Event('input', { bubbles: true })); return true; }`);
         await sleep(delay);
       }
     },
     async keyIn(fnSource, key) {
       const wv = await api.webview();
-      await wv.evaluate(`(doc) => { const el = (${fnSource})(doc) ?? doc.body; el.dispatchEvent(new KeyboardEvent('keydown', { key: ${JSON.stringify(key)}, bubbles: true })); return true; }`);
+      await wv.evaluate(`(doc) => { const el = (${fnSource})(doc) ?? doc.body; el.dispatchEvent(new KeyboardEvent('keydown', { key: ${jsString(key)}, bubbles: true })); return true; }`);
     },
     async type(text, delay = 110) {
       for (const ch of text) {
@@ -234,8 +234,8 @@ async function session({ steps }) {
 }
 
 const card = (title) =>
-  `(doc) => [...doc.querySelectorAll('.card')].find((c) => c.querySelector('.card-title')?.textContent?.startsWith(${JSON.stringify(title)}))`;
-const column = (name) => `(doc) => doc.querySelector('.column[aria-label=${JSON.stringify(name)}]')`;
+  `(doc) => [...doc.querySelectorAll('.card')].find((c) => c.querySelector('.card-title')?.textContent?.startsWith(${jsString(title)}))`;
+const column = (name) => `(doc) => doc.querySelector('.column[aria-label=${jsString(name)}]')`;
 const boardReady = "(doc) => doc.querySelectorAll('.card').length > 0";
 
 const demos = {
@@ -243,7 +243,7 @@ const demos = {
   async open() {
     const s = await session({ steps: [{ command: 'workbench.view.extension.ghProjects' }] });
     const row = (label) =>
-      `[...document.querySelectorAll('.monaco-list-row')].find((r) => r.getAttribute('aria-label')?.startsWith(${JSON.stringify(label)}))`;
+      `[...document.querySelectorAll('.monaco-list-row')].find((r) => r.getAttribute('aria-label')?.startsWith(${jsString(label)}))`;
     await s.host.waitFor(`!!(${row(SANDBOX.title)})`);
     await sleep(800);
     await s.start();
@@ -288,7 +288,7 @@ const demos = {
     await s.clickIn("(doc) => [...doc.querySelectorAll('.filter-menu summary')].find((x) => x.textContent.startsWith('Priority'))");
     await sleep(600);
     for (const name of ['P0', 'P1']) {
-      await s.clickIn(`(doc) => [...doc.querySelectorAll('.filter-menu[open] .menu label')].find((l) => l.querySelector('.menu-label')?.textContent === ${JSON.stringify(name)})`);
+      await s.clickIn(`(doc) => [...doc.querySelectorAll('.filter-menu[open] .menu label')].find((l) => l.querySelector('.menu-label')?.textContent === ${jsString(name)})`);
       await sleep(700);
     }
     await s.keyIn('(doc) => doc.body', 'Escape');
